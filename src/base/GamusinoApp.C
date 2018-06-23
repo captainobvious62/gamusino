@@ -4,6 +4,16 @@
 #include "ModulesApp.h"
 #include "MooseSyntax.h"
 
+// Actions
+// Materials
+// Kernels
+// AuxKernels
+// DiracKernels
+// BCs
+// Controls
+// Functions
+// UserObjects
+
 template <>
 InputParameters
 validParams<GamusinoApp>()
@@ -29,12 +39,14 @@ GamusinoApp::GamusinoApp(InputParameters parameters) : MooseApp(parameters)
 
 GamusinoApp::~GamusinoApp() {}
 
+// External entry point for dynamic application loading
 void
 GamusinoApp::registerApps()
 {
   registerApp(GamusinoApp);
 }
 
+// External entry point for dynamic object registration
 void
 GamusinoApp::registerObjects(Factory & factory)
 {
