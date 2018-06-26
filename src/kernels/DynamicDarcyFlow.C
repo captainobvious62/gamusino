@@ -4,7 +4,7 @@
 template<>
 InputParameters validParams<DynamicDarcyFlow>()
 {
-  InputParameters params = valadParams<Kernel>();
+  InputParameters params = validParams<Kernel>();
   params.set<bool>("use_displaced_mesh") = false;
   params.addRequiredCoupledVar("skeletondisp","skeleton displacement variable");
   params.addRequiredCoupledVar("skeletonvel","skeleton velocity variable");

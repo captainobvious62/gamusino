@@ -25,7 +25,7 @@ PorePressureBC::computeQpResidual()
 }
 
 Real
-PorePressureBC::computeQpResidual()
+PorePressureBC::computeQpJacobian()
 {
   return 0.0;
 }

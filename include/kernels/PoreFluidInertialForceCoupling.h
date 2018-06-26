@@ -5,6 +5,7 @@
 #include "Material.h"
 
 //Forward Declarations
+class PoreFluidInertialForceCoupling;
 
 template<>
 InputParameters validParams<PoreFluidInertialForceCoupling>();

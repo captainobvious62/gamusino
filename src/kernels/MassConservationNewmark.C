@@ -17,8 +17,8 @@ MassConservationNewmark::MassConservationNewmark(const InputParameters & paramet
   :Kernel(parameters),
 
   _ux_var(coupled("displacements",0)),
-  _uy_var(_mesh.dimension() >= 2 ? coupled("displacements",1) : libmesh::invalid_uint),
-  _uz_var(_mesh.dimension() == 3 ? coupled("displacements",2) : libmesh::invalid_uint),
+  _uy_var(_mesh.dimension() >= 2 ? coupled("displacements",1) : libMesh::invalid_uint),
+  _uz_var(_mesh.dimension() == 3 ? coupled("displacements",2) : libMesh::invalid_uint),
 
   _grad_ux(coupledGradient("displacements",0)),
   _grad_uy(_mesh.dimension() >= 2 ? coupledGradient("displacements",1) : _grad_zero),
@@ -32,9 +32,9 @@ MassConservationNewmark::MassConservationNewmark(const InputParameters & paramet
   _grad_vy_old(_mesh.dimension() >= 2 ? coupledGradientOld("velocities",1) : _grad_zero),
   _grad_vz_old(_mesh.dimension() == 3 ? coupledGradientOld("velocities",2) : _grad_zero),
 
-  _grad_ax_old(coupledGradientOld("acceleration",0)),
-  _grad_ay_old(_mesh.dimension() >= 2 ? coupledGradientOld("acceleration",1) : _grad_zero),
-  _grad_az_old(_mesh.dimension() == 3 ? coupledGradientOld("acceleration",2) : _grad_zero),
+  _grad_ax_old(coupledGradientOld("accelerations",0)),
+  _grad_ay_old(_mesh.dimension() >= 2 ? coupledGradientOld("accelerations",1) : _grad_zero),
+  _grad_az_old(_mesh.dimension() == 3 ? coupledGradientOld("accelerations",2) : _grad_zero),
 
   _beta(getParam<Real>("beta")),
   _gamma(getParam<Real>("gamma"))
@@ -49,7 +49,7 @@ MassConservationNewmark::computeQpResidual()
   Real div_u_old = _grad_ux_old[_qp](0) + _grad_uy_old[_qp](1) + _grad_uz_old[_qp](2);
   Real div_v_old = _grad_vx_old[_qp](0) + _grad_vy_old[_qp](1) + _grad_vz_old[_qp](2);
   Real div_a_old = _grad_ax_old[_qp](0) + _grad_ay_old[_qp](1) + _grad_az_old[_qp](2);
-  Real div_v = (_gamma/_beta/_dt)*(div_u - div_u_old) + (1.0 - _gamma_beta)*div_v_old - (1.0 - _gamma/2.0/_beta)*div_a_old;
+  Real div_v = (_gamma/_beta/_dt)*(div_u - div_u_old) + (1.0 - _gamma/_beta)*div_v_old - (1.0 - _gamma/2.0/_beta)*div_a_old;
   return -_test[_i][_qp]*div_v;
 }
 
