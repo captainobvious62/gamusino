@@ -11,6 +11,7 @@ template<>
 InputParameters validParams<DynamicDarcyFlow>();
 
 class DynamicDarcyFlow : public Kernel
+{
 public:
 
     DynamicDarcyFlow(const InputParameters & parameters);

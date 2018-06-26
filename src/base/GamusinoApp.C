@@ -7,23 +7,37 @@
 // Actions
 // Materials
 // Kernels
+#include "PoreFluidInertialCoupling.h"
+#include "DynamicDarcyFlow.h"
+#include "MassConservationNewmark.h"
+
 // AuxKernels
+#include "NewmarkPoreFluidAccelAux.h"
+
 // DiracKernels
+
 // BCs
+#include "PorePressureBC.h"
+
 // Controls
 // Functions
 // UserObjects
 
-template <>
-InputParameters
-validParams<GamusinoApp>()
+template<>
+InputParameters validParams<GamusinoApp>()
 {
   InputParameters params = validParams<MooseApp>();
+
+  params.set<bool>("use_legacy_uo_initialization") = false
+  params.set<bool>("use_legacy_uo_aux_computation") = false
   return params;
 }
 
-GamusinoApp::GamusinoApp(InputParameters parameters) : MooseApp(parameters)
+GamusinoApp::GamusinoApp(const InputParameters & parameters) : 
+    MooseApp(parameters)
 {
+  srand(processor_id());
+
   Moose::registerObjects(_factory);
   ModulesApp::registerObjects(_factory);
   GamusinoApp::registerObjects(_factory);
@@ -37,19 +51,31 @@ GamusinoApp::GamusinoApp(InputParameters parameters) : MooseApp(parameters)
   GamusinoApp::registerExecFlags(_factory);
 }
 
-GamusinoApp::~GamusinoApp() {}
+GamusinoApp::~GamusinoApp()
+{
+}
 
 // External entry point for dynamic application loading
+
 void
 GamusinoApp::registerApps()
 {
   registerApp(GamusinoApp);
 }
 
+
 // External entry point for dynamic object registration
 void
 GamusinoApp::registerObjects(Factory & factory)
 {
+  registerAux(NewmarkPoreFluidAccelAux);
+
+  registerKernel(PoreFluidInertialForceCoupling);
+  registerKernel(DynamicDarcyFlow);
+  registerKernel(MassConservationNewmark);
+
+  registerBoundaryCondition(PorePressureBC);
+
     Registry::registerObjectsTo(factory, {"GamusinoApp"});
 }
 
