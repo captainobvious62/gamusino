@@ -11,12 +11,12 @@
   block_id = '0'
   block_name = 'domain'
   dim = 2
-  nx = 50
+  nx = 25
   ny = 5
   xmin = 0
-  xmax = 1000 # m
+  xmax = 10000 # m
   ymin = 0
-  ymax = 100 # m
+  ymax = 5000 # m
   elem_type = QUAD8
   zmax = 0
   nz = 0
@@ -294,6 +294,18 @@
   []
   [ricker_wavelet]
     type = ParsedFunction
+    vars = 'f factor shift'
+    value = 'factor*((1.0 - 2.0*(pi^2)*(f^2)*( (t + 1/f * pi/shift)^2))*exp(-1.0*(pi^2)*(f^2)*((t + 1/f * pi/shift)^2)))'
+    vals = '15 1e3 -8'
+  []
+  [ricker_source_plus]
+    type = ParsedFunction
+    vars = 'f factor'
+    value = 'factor*((1.0 - 2.0*(pi^2)*(f^2)*(t^2))*exp(-1.0*(pi^2)*(f^2)*(t^2)))'
+    vals = '1 1e3'
+  []
+  [ricker_source_minus]
+    type = ParsedFunction
     vars = 'f factor'
     value = 'factor*((1.0 - 2.0*(pi^2)*(f^2)*(t^2))*exp(-1.0*(pi^2)*(f^2)*(t^2)))'
     vals = '1 -1e3'
@@ -363,37 +375,37 @@
 []
 
 [Postprocessors]
-  [rightcornerdisp]
-    type = PointValue
-    point = '10 10 0'
-    variable = u_y
-  []
-  [leftcornerdisp]
-    type = PointValue
-    point = '0 10 0'
-    variable = u_y
-  []
-  [rightcornerdarcy]
-    type = PointValue
-    point = '10 10 0'
-    variable = w_y
-  []
-  [leftcornerdarcy]
-    type = PointValue
-    point = '0 10 0'
-    variable = w_y
-  []
   [ShotPoint_p]
     type = PointValue
-    point = '500 100 0'
+    point = '5000 4500 0'
     outputs = 'csv'
     variable = p
   []
   [ShotPoint_u_y]
     type = PointValue
-    point = '500 100 0'
+    point = '5000 4500 0'
     outputs = 'csv'
     variable = u_y
+  []
+  [shotpointdisp]
+    type = PointValue
+    point = '5000 5000 0'
+    variable = u_y
+  []
+  [shotpointdarcy]
+    type = PointValue
+    point = '5000 5000 0'
+    variable = w_y
+  []
+  [shotsurface_disp]
+    type = PointValue
+    point = '500 100 0'
+    variable = u_y
+  []
+  [shotsurf_darcy]
+    type = PointValue
+    point = '500 100 0'
+    variable = w_y
   []
 []
 
@@ -406,10 +418,10 @@
   nl_rel_tol = 0.1
   nl_abs_tol = 1.0
   start_time = 0
-  end_time = 5.0
-  dtmax = 1.0
-  dtmin = 0.0000001
-  dt = 0.001
+  end_time = 1.0
+  dtmax = 0.001
+  dtmin = 0.0000000001
+  dt = 0.01
   verbose = true
   [TimeStepper]
     type = ConstantDT
@@ -420,7 +432,6 @@
 [Outputs]
   exodus = true
   output_on = 'timestep_end'
-  inactive = 'csv'
   [console]
     # perf_log = true
     type = Console
@@ -429,21 +440,26 @@
   [csv]
     type = CSV
     execute_on = 'initial timestep_end'
+    execute_vector_postprocessors_on = 'TIMESTEP_END'
+    sort_columns = true
+    execute_postprocessors_on = 'TIMESTEP_END'
+    time_data = true
+    execute_scalars_on = 'TIMESTEP_END'
   []
 []
 
 [DiracKernels]
-  inactive = 'point_source_u_x point_source_p'
+  inactive = 'point_source_u_x point_source_p point_source_u_x_plus point_source_u_x_minus point_source_u_y_plus point_source_u_y_minus'
   [point_source_u_x]
     type = FunctionDiracSource
     function = ricker_wavelet
-    point = '200 100 0'
+    point = '500 50 0'
     variable = u_x
   []
   [point_source_u_y]
     type = FunctionDiracSource
     function = ricker_wavelet
-    point = '500 100 0'
+    point = '5000 4500 0'
     variable = u_y
   []
   [point_source_p]
@@ -452,13 +468,37 @@
     point = '50 50 0'
     variable = p
   []
+  [point_source_u_x_plus]
+    type = FunctionDiracSource
+    function = ricker_source_plus
+    point = '500 50 0'
+    variable = u_x
+  []
+  [point_source_u_x_minus]
+    type = FunctionDiracSource
+    function = ricker_source_minus
+    point = '500 50 0'
+    variable = u_x
+  []
+  [point_source_u_y_plus]
+    type = FunctionDiracSource
+    function = ricker_source_plus
+    point = '500 50 0'
+    variable = u_y
+  []
+  [point_source_u_y_minus]
+    type = FunctionDiracSource
+    function = ricker_source_minus
+    point = '500 50 0'
+    variable = u_y
+  []
 []
 
 [MeshModifiers]
 []
 
 [Adaptivity]
-  initial_steps = 1
+  initial_steps = 2
   recompute_markers_during_cycles = true
   marker = efm_p
   initial_marker = efm_p
@@ -482,9 +522,16 @@
     []
   []
   [Markers]
+    inactive = 'efm_u_y'
     [efm_p]
       type = ErrorFractionMarker
       indicator = GradientJump_p
+      coarsen = 0.45
+      refine = 0.65
+    []
+    [efm_u_y]
+      type = ErrorFractionMarker
+      indicator = GradientJump_u_y
       coarsen = 0.45
       refine = 0.65
     []
