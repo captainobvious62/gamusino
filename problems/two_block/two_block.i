@@ -1,56 +1,4 @@
-# Terzaghi's problem of consolodation of a drained medium
-#
-# A saturated soil sample sits in a bath of water.
-# It is constrained on its sides, and bottom.
-# Its sides and bottom are also impermeable.
-# Initially it is unstressed.
-# A normal stress, q, is applied to the soil's top.
-# The soil then slowly compresses as water is squeezed
-# out from the sample from its top (the top BC for
-# the porepressure is porepressure = 0).
-#
-# See, for example.  Section 2.2 of the online manuscript
-# Arnold Verruijt "Theory and Problems of Poroelasticity" Delft University of Technology 2013
-# but note that the "sigma" in that paper is the negative
-# of the stress in TensorMechanics
-#
-# Here are the problem's parameters, and their values:
-# Soil height.  h = 10
-# Soil's Lame lambda.  la = 2
-# Soil's Lame mu, which is also the Soil's shear modulus.  mu = 3
-# Soil bulk modulus.  K = la + 2*mu/3 = 4
-# Soil confined compressibility.  m = 1/(K + 4mu/3) = 0.125
-# Soil bulk compliance.  1/K = 0.25
-# Fluid bulk modulus.  Kf = 8
-# Fluid bulk compliance.  1/Kf = 0.125
-# Fluid mobility (soil permeability/fluid viscosity).  k = 1.5
-# Soil initial porosity.  phi0 = 0.1
-# Biot coefficient.  alpha = 0.6
-# Soil initial storativity, which is the reciprocal of the initial Biot modulus.  S = phi0/Kf + (alpha - phi0)(1 - alpha)/K = 0.0625
-# Consolidation coefficient.  c = k/(S + alpha^2 m) = 13.95348837
-# Normal stress on top.  q = 1
-# Initial porepressure, resulting from instantaneous application of q, assuming corresponding instantaneous increase of porepressure (Note that this is calculated by MOOSE: we only need it for the analytical solution).  p0 = alpha*m*q/(S + alpha^2 m) = 0.69767442
-# Initial vertical displacement (down is positive), resulting from instantaneous application of q (Note this is calculated by MOOSE: we only need it for the analytical solution).  uz0 = q*m*h*S/(S + alpha^2 m)
-# Final vertical displacement (down in positive) (Note this is calculated by MOOSE: we only need it for the analytical solution).  uzinf = q*m*h
-#
-# The solution for porepressure is
-# P = 4*p0/\pi \sum_{k=1}^{\infty} \frac{(-1)^{k-1}}{2k-1} \cos ((2k-1)\pi z/(2h)) \exp(-(2k-1)^2 \pi^2 ct/(4 h^2))
-# This series converges very slowly for ct/h^2 small, so in that domain
-# P = p0 erf( (1-(z/h))/(2 \sqrt(ct/h^2)) )
-#
-# The degree of consolidation is defined as
-# U = (uz - uz0)/(uzinf - uz0)
-# where uz0 and uzinf are defined above, and
-# uz = the vertical displacement of the top (down is positive)
-# U = 1 - (8/\pi^2)\sum_{k=1}^{\infty} \frac{1}{(2k-1)^2} \exp(-(2k-1)^2 \pi^2 ct/(4 h^2))
-#
-# FINAL NOTE: The above solution assumes constant Biot Modulus.
-# In porous_flow this is not true.  Therefore the solution is
-# a little different than in the paper.  This test was therefore
-# validated against MOOSE's poromechanics, which can choose either
-# a constant Biot Modulus (which has been shown to agree with
-# the analytic solution), or a non-constant Biot Modulus (which
-# gives the same results as porous_flow).
+
 [Mesh]
   type = FileMesh
   file = 2blockmesh.e
@@ -78,10 +26,13 @@
 
 [Variables]
   [disp_x]
+    block = 'crust mantle'
   []
   [disp_y]
+    block = 'crust mantle'
   []
   [porepressure]
+    block = 'crust mantle'
   []
 []
 
@@ -90,13 +41,13 @@
     type = PresetBC
     variable = disp_x
     boundary = 'left right'
-    value = 0
+    value = 0 # m
   []
   [confiney]
     type = PresetBC
     variable = disp_y
     boundary = 'bottom'
-    value = 0
+    value = 0 # m
   []
   [topdrained]
     type = DirichletBC
@@ -148,7 +99,7 @@
   [flux]
     type = PorousFlowAdvectiveFlux
     variable = porepressure
-    gravity = '0 0 0'
+    gravity = '0 0 0' # m/s**2
     fluid_component = 0
   []
 []
@@ -166,62 +117,8 @@
 []
 
 [Materials]
-  [eff_fluid_pressure]
-    type = PorousFlowEffectiveFluidPressure
-    at_nodes = true
-  []
-  [eff_fluid_pressure_qp]
-    type = PorousFlowEffectiveFluidPressure
-  []
-  [vol_strain]
-    type = PorousFlowVolumetricStrain
-  []
-  [ppss]
-    type = PorousFlow1PhaseP
-    porepressure = 'porepressure'
-    capillary_pressure = pc
-  []
-  [ppss_nodal]
-    type = PorousFlow1PhaseP
-    at_nodes = true
-    porepressure = 'porepressure'
-    capillary_pressure = pc
-  []
-  [massfrac]
-    type = PorousFlowMassFraction
-    at_nodes = true
-  []
-  [simple_fluid]
-    type = PorousFlowSingleComponentFluid
-    fp = simple_fluid
-    phase = 0
-    at_nodes = true
-  []
-  [simple_fluid_qp]
-    type = PorousFlowSingleComponentFluid
-    fp = simple_fluid
-    phase = 0
-  []
-  [porosity]
-    type = PorousFlowPorosity
-    fluid = true
-    mechanical = true
-    ensure_positive = false
-    at_nodes = true
-    porosity_zero = '0.1'
-    biot_coefficient = 0.6
-    solid_bulk = 4
-  []
-  [permeability]
-    type = PorousFlowPermeabilityConst
-    permeability = '1.5 0 0   0 1.5 0   0 0 1.5'
-  []
-  [relperm]
-    type = PorousFlowRelativePermeabilityCorey
-    at_nodes = true
-    n = 0 # unimportant in this fully-saturated situation
-    phase = 0
-  []
+  # Crust
+  # Mantle
   [temperature_crust]
     type = PorousFlowTemperature
     block = 'crust'
@@ -246,93 +143,167 @@
     type = ComputeLinearElasticStress
     block = 'crust'
   []
+  [eff_fluid_pressure_crust]
+    type = PorousFlowEffectiveFluidPressure
+    at_nodes = true
+    block = 'crust'
+  []
+  [eff_fluid_pressure_qp_crust]
+    type = PorousFlowEffectiveFluidPressure
+    block = 'crust'
+  []
+  [vol_strain_crust]
+    type = PorousFlowVolumetricStrain
+    block = 'crust'
+  []
+  [ppss_crust]
+    type = PorousFlow1PhaseP
+    porepressure = 'porepressure'
+    capillary_pressure = pc
+    block = 'crust'
+  []
+  [ppss_nodal_crust]
+    type = PorousFlow1PhaseP
+    at_nodes = true
+    porepressure = 'porepressure'
+    capillary_pressure = pc
+    block = 'crust'
+  []
+  [massfrac_crust]
+    type = PorousFlowMassFraction
+    at_nodes = true
+    block = 'crust'
+  []
+  [simple_fluid_crust]
+    type = PorousFlowSingleComponentFluid
+    fp = simple_fluid
+    phase = 0
+    at_nodes = true
+    block = 'crust'
+  []
+  [simple_fluid_qp_crust]
+    type = PorousFlowSingleComponentFluid
+    fp = simple_fluid
+    phase = 0
+    block = 'crust'
+  []
+  [relperm_crust]
+    type = PorousFlowRelativePermeabilityCorey
+    at_nodes = true
+    n = 0 # unimportant in this fully-saturated situation
+    phase = 0
+    block = 'crust'
+  []
+  [porosity_crust]
+    type = PorousFlowPorosity
+    fluid = true
+    mechanical = true
+    ensure_positive = false
+    at_nodes = true
+    porosity_zero = '0.1'
+    biot_coefficient = 0.6
+    solid_bulk = 4
+    block = 'crust'
+  []
+  [permeability_crust]
+    type = PorousFlowPermeabilityConst
+    permeability = '1.5 0 0   0 1.5 0   0 0 1.5'
+    block = 'crust'
+  []
+  [temperature_mantle]
+    type = PorousFlowTemperature
+    block = 'mantle'
+  []
+  [temperature_nodal_mantle]
+    type = PorousFlowTemperature
+    at_nodes = true
+    block = 'mantle'
+  []
+  [elasticity_tensor_mantle]
+    # bulk modulus is lambda + 2*mu/3 = 2 + 2*3/3 = 4
+    type = ComputeElasticityTensor
+    C_ijkl = '2 3'
+    fill_method = symmetric_isotropic
+    block = 'mantle'
+  []
+  [strain_mantle]
+    type = ComputeSmallStrain
+    block = 'mantle'
+  []
+  [stress_mantle]
+    type = ComputeLinearElasticStress
+    block = 'mantle'
+  []
+  [eff_fluid_pressure_mantle]
+    type = PorousFlowEffectiveFluidPressure
+    at_nodes = true
+    block = 'mantle'
+  []
+  [eff_fluid_pressure_qp_mantle]
+    type = PorousFlowEffectiveFluidPressure
+    block = 'mantle'
+  []
+  [vol_strain_mantle]
+    type = PorousFlowVolumetricStrain
+    block = 'mantle'
+  []
+  [ppss_mantle]
+    type = PorousFlow1PhaseP
+    porepressure = 'porepressure'
+    capillary_pressure = pc
+    block = 'mantle'
+  []
+  [ppss_nodal_mantle]
+    type = PorousFlow1PhaseP
+    at_nodes = true
+    porepressure = 'porepressure'
+    capillary_pressure = pc
+    block = 'mantle'
+  []
+  [massfrac_mantle]
+    type = PorousFlowMassFraction
+    at_nodes = true
+    block = 'mantle'
+  []
+  [simple_fluid_mantle]
+    type = PorousFlowSingleComponentFluid
+    fp = simple_fluid
+    phase = 0
+    at_nodes = true
+    block = 'mantle'
+  []
+  [simple_fluid_qp_mantle]
+    type = PorousFlowSingleComponentFluid
+    fp = simple_fluid
+    phase = 0
+    block = 'mantle'
+  []
+  [relperm_mantle]
+    type = PorousFlowRelativePermeabilityCorey
+    at_nodes = true
+    n = 0 # unimportant in this fully-saturated situation
+    phase = 0
+    block = 'mantle'
+  []
+  [porosity_mantle]
+    type = PorousFlowPorosity
+    fluid = true
+    mechanical = true
+    ensure_positive = false
+    at_nodes = true
+    porosity_zero = '0.1'
+    biot_coefficient = 0.6
+    solid_bulk = 4
+    block = 'mantle'
+  []
+  [permeability_mantle]
+    type = PorousFlowPermeabilityConst
+    permeability = '1.5 0 0   0 1.5 0   0 0 1.5'
+    block = 'mantle'
+  []
 []
 
 [Postprocessors]
-  [p0]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 0 0'
-    variable = porepressure
-    use_displaced_mesh = false
-  []
-  [p1]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 1 0'
-    variable = porepressure
-    use_displaced_mesh = false
-  []
-  [p2]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 2 0'
-    variable = porepressure
-    use_displaced_mesh = false
-  []
-  [p3]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 3 0'
-    variable = porepressure
-    use_displaced_mesh = false
-  []
-  [p4]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 4 0'
-    variable = porepressure
-    use_displaced_mesh = false
-  []
-  [p5]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 5 0'
-    variable = porepressure
-    use_displaced_mesh = false
-  []
-  [p6]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 6 0'
-    variable = porepressure
-    use_displaced_mesh = false
-  []
-  [p7]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 7 0'
-    variable = porepressure
-    use_displaced_mesh = false
-  []
-  [p8]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 8 0'
-    variable = porepressure
-    use_displaced_mesh = false
-  []
-  [p9]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 9 0'
-    variable = porepressure
-    use_displaced_mesh = false
-  []
-  [p99]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 10 0'
-    variable = porepressure
-    use_displaced_mesh = false
-  []
-  [ydisp]
-    type = PointValue
-    outputs = 'csv'
-    point = '0 10 0'
-    variable = disp_y
-    use_displaced_mesh = false
-  []
   [dt]
     type = FunctionValuePostprocessor
     outputs = 'console'
@@ -363,7 +334,7 @@
 
 [Outputs]
   execute_on = 'timestep_end'
-  file_base = terzaghi
+  file_base = two_block
   [csv]
     type = CSV
   []
