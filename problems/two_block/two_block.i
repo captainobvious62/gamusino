@@ -1,13 +1,11 @@
-
 [Mesh]
   type = FileMesh
-  file = 2blockmesh.e
+  file = two_block.e
 []
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
   PorousFlowDictator = 'dictator'
-  block = '0'
 []
 
 [UserObjects]
@@ -26,39 +24,43 @@
 
 [Variables]
   [disp_x]
-    block = 'crust mantle'
   []
   [disp_y]
-    block = 'crust mantle'
   []
   [porepressure]
-    block = 'crust mantle'
   []
 []
 
 [BCs]
+  inactive = 'basefixed topdrained topload'
   [confinex]
     type = PresetBC
     variable = disp_x
     boundary = 'left right'
-    value = 0 # m
+    value = 0
   []
   [confiney]
     type = PresetBC
     variable = disp_y
-    boundary = 'bottom'
-    value = 0 # m
+    boundary = 'bottom top'
+    value = 0
+  []
+  [basefixed]
+    type = PresetBC
+    variable = disp_z
+    boundary = 'back'
+    value = 0
   []
   [topdrained]
     type = DirichletBC
     variable = porepressure
-    boundary = 'top'
+    boundary = 'front'
     value = 0
   []
   [topload]
     type = NeumannBC
-    variable = disp_y
-    boundary = 'top'
+    variable = disp_z
+    boundary = 'front'
     value = -1
   []
 []
@@ -99,7 +101,7 @@
   [flux]
     type = PorousFlowAdvectiveFlux
     variable = porepressure
-    gravity = '0 0 0' # m/s**2
+    gravity = '0 0 0'
     fluid_component = 0
   []
 []
@@ -187,11 +189,22 @@
     phase = 0
     block = 'crust'
   []
-  [relperm_crust]
-    type = PorousFlowRelativePermeabilityCorey
+  [dens_all_crust]
+    type = PorousFlowJoiner
     at_nodes = true
-    n = 0 # unimportant in this fully-saturated situation
-    phase = 0
+    material_property = PorousFlow_fluid_phase_density_nodal
+    block = 'crust'
+  []
+  [dens_all_at_quadpoints_crust]
+    type = PorousFlowJoiner
+    material_property = PorousFlow_fluid_phase_density_qp
+    at_nodes = false
+    block = 'crust'
+  []
+  [visc_all_crust]
+    type = PorousFlowJoiner
+    at_nodes = true
+    material_property = PorousFlow_viscosity_nodal
     block = 'crust'
   []
   [porosity_crust]
@@ -208,6 +221,19 @@
   [permeability_crust]
     type = PorousFlowPermeabilityConst
     permeability = '1.5 0 0   0 1.5 0   0 0 1.5'
+    block = 'crust'
+  []
+  [relperm_crust]
+    type = PorousFlowRelativePermeabilityCorey
+    at_nodes = true
+    n = 0 # unimportant in this fully-saturated situation
+    phase = 0
+    block = 'crust'
+  []
+  [relperm_all_crust]
+    type = PorousFlowJoiner
+    at_nodes = true
+    material_property = PorousFlow_relative_permeability_nodal
     block = 'crust'
   []
   [temperature_mantle]
@@ -278,11 +304,22 @@
     phase = 0
     block = 'mantle'
   []
-  [relperm_mantle]
-    type = PorousFlowRelativePermeabilityCorey
+  [dens_all_mantle]
+    type = PorousFlowJoiner
     at_nodes = true
-    n = 0 # unimportant in this fully-saturated situation
-    phase = 0
+    material_property = PorousFlow_fluid_phase_density_nodal
+    block = 'mantle'
+  []
+  [dens_all_at_quadpoints_mantle]
+    type = PorousFlowJoiner
+    material_property = PorousFlow_fluid_phase_density_qp
+    at_nodes = false
+    block = 'mantle'
+  []
+  [visc_all_mantle]
+    type = PorousFlowJoiner
+    at_nodes = true
+    material_property = PorousFlow_viscosity_nodal
     block = 'mantle'
   []
   [porosity_mantle]
@@ -299,6 +336,19 @@
   [permeability_mantle]
     type = PorousFlowPermeabilityConst
     permeability = '1.5 0 0   0 1.5 0   0 0 1.5'
+    block = 'mantle'
+  []
+  [relperm_mantle]
+    type = PorousFlowRelativePermeabilityCorey
+    at_nodes = true
+    n = 0 # unimportant in this fully-saturated situation
+    phase = 0
+    block = 'mantle'
+  []
+  [relperm_all_mantle]
+    type = PorousFlowJoiner
+    at_nodes = true
+    material_property = PorousFlow_relative_permeability_nodal
     block = 'mantle'
   []
 []
@@ -334,7 +384,7 @@
 
 [Outputs]
   execute_on = 'timestep_end'
-  file_base = two_block
+  file_base = terzaghi
   [csv]
     type = CSV
   []
