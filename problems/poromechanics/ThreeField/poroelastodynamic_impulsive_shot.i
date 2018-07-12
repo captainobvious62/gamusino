@@ -6,6 +6,7 @@
 # boundary_id = '9 10 11 12 13'
 # boundary_name = 'bottom right topright topleft left'
 # []
+inactive = 'Postprocessors'
 [Mesh]
   type = GeneratedMesh
   block_id = '0'
@@ -14,9 +15,9 @@
   nx = 25
   ny = 5
   xmin = 0
-  xmax = 10000 # m
+  xmax = 200 # m
   ymin = 0
-  ymax = 5000 # m
+  ymax = 50 # m
   elem_type = QUAD8
   zmax = 0
   nz = 0
@@ -296,7 +297,7 @@
     type = ParsedFunction
     vars = 'f factor shift'
     value = 'factor*((1.0 - 2.0*(pi^2)*(f^2)*( (t + 1/f * pi/shift)^2))*exp(-1.0*(pi^2)*(f^2)*((t + 1/f * pi/shift)^2)))'
-    vals = '15 1e3 -8'
+    vals = '10 1e6 -8'
   []
   [ricker_source_plus]
     type = ParsedFunction
@@ -375,6 +376,7 @@
 []
 
 [Postprocessors]
+  inactive = 'ShotPoint_p'
   [ShotPoint_p]
     type = PointValue
     point = '5000 4500 0'
@@ -418,7 +420,7 @@
   nl_rel_tol = 0.1
   nl_abs_tol = 1.0
   start_time = 0
-  end_time = 1.0
+  end_time = 5
   dtmax = 0.001
   dtmin = 0.0000000001
   dt = 0.01
@@ -459,7 +461,7 @@
   [point_source_u_y]
     type = FunctionDiracSource
     function = ricker_wavelet
-    point = '5000 4500 0'
+    point = '100 50 0'
     variable = u_y
   []
   [point_source_p]
