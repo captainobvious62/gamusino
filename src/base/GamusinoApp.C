@@ -5,7 +5,10 @@
 #include "MooseSyntax.h"
 
 // Actions
+
 // Materials
+#include "GamusinoMaterialBase.h"
+
 // Kernels
 #include "PoreFluidInertialForceCoupling.h"
 #include "DynamicDarcyFlow.h"
@@ -20,8 +23,21 @@
 #include "PorePressureBC.h"
 
 // Controls
+
 // Functions
+
 // UserObjects
+#include "GamusinoScaling.h"
+#include "GamusinoSUPG.h"
+#include "GamusinoPropertyReadFile.h"
+#include "GamusinoFluidDensityConstant.h"
+#include "GamusinoFluidDensityLinear.h"
+#include "GamusinoFluidViscosityConstant.h"
+#include "GamusinoFluidViscosityLinear.h"
+#include "GamusinoPorosityConstant.h"
+#include "GamusinoPermeabilityConstant.h"
+#include "GamusinoPermeabilityKC.h"
+#include "GamusinoPermeabilityCubicLaw.h"
 
 template<>
 InputParameters validParams<GamusinoApp>()
@@ -68,13 +84,39 @@ GamusinoApp::registerApps()
 void
 GamusinoApp::registerObjects(Factory & factory)
 {
-  registerAux(NewmarkPoreFluidAccelAux);
+  // Materials
+  registerMaterial(GamusinoMaterialBase);
 
+  // Kernels
   registerKernel(PoreFluidInertialForceCoupling);
   registerKernel(DynamicDarcyFlow);
   registerKernel(MassConservationNewmark);
 
+  // AuxKernels
+  registerAux(NewmarkPoreFluidAccelAux);
+
+  // DriacKernels
+
+  // BCs
   registerBoundaryCondition(PorePressureBC);
+
+  // Controls
+
+  // Function
+
+  // UserObjects
+  registerUserObject(GamusinoScaling);
+  registerUserObject(GamusinoSUPG);
+  registerUserObject(GamusinoPropertyReadFile);
+  registerUserObject(GamusinoFluidDensityConstant);
+  registerUserObject(GamusinoFluidDensityLinear);
+  registerUserObject(GamusinoFluidViscosityConstant);
+  registerUserObject(GamusinoFluidViscosityLinear);
+  registerUserObject(GamusinoPorosityConstant);
+  registerUserObject(GamusinoPorosityTHM);
+  registerUserObject(GamusinoPermeabilityConstant);
+  registerUserObject(GamusinoPermeabilityKC);
+  registerUserObject(GamusinoPermeabilityCubicLaw);
 
     Registry::registerObjectsTo(factory, {"GamusinoApp"});
 }

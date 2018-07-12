@@ -32,7 +32,7 @@
 []
 
 [BCs]
-  inactive = 'basefixed topdrained topload'
+  inactive = 'topdrained topload'
   [confinex]
     type = PresetBC
     variable = disp_x
@@ -120,7 +120,6 @@
 
 [Materials]
   # Crust
-  # Mantle
   [temperature_crust]
     type = PorousFlowTemperature
     block = 'crust'
@@ -236,6 +235,8 @@
     material_property = PorousFlow_relative_permeability_nodal
     block = 'crust'
   []
+
+  # Mantle
   [temperature_mantle]
     type = PorousFlowTemperature
     block = 'mantle'
@@ -351,6 +352,8 @@
     material_property = PorousFlow_relative_permeability_nodal
     block = 'mantle'
   []
+
+
 []
 
 [Postprocessors]
