@@ -1,17 +1,17 @@
-#ifndef GOLEMFLUIDDENSITYLINEAR_H
-#define GOLEMFLUIDDENSITYLINEAR_H
+#ifndef GAMUSINOFLUIDDENSITYLINEAR_H
+#define GAMUSINOFLUIDDENSITYLINEAR_H
 
-#include "GolemFluidDensity.h"
+#include "GamusinoFluidDensity.h"
 
-class GolemFluidDensityLinear;
+class GamusinoFluidDensityLinear;
 
 template <>
-InputParameters validParams<GolemFluidDensityLinear>();
+InputParameters validParams<GamusinoFluidDensityLinear>();
 
-class GolemFluidDensityLinear : public GolemFluidDensity
+class GamusinoFluidDensityLinear : public GamusinoFluidDensity
 {
 public:
-  GolemFluidDensityLinear(const InputParameters & parameters);
+  GamusinoFluidDensityLinear(const InputParameters & parameters);
   Real computeDensity(Real, Real temperature, Real rho0) const;
   Real computedDensitydT(Real, Real, Real rho0) const;
   Real computedDensitydp(Real, Real) const;
@@ -21,4 +21,4 @@ private:
   Real _Tc;
 };
 
-#endif // GOLEMFLUIDDENSITYLINEAR_H
+#endif // GAMUSINOFLUIDDENSITYLINEAR_H

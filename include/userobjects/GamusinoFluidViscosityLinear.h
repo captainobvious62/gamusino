@@ -1,17 +1,17 @@
-#ifndef GOLEMFLUIDVISCOSITYLINEAR_H
-#define GOLEMFLUIDVISCOSITYLINEAR_H
+#ifndef GAMUSINOFLUIDVISCOSITYLINEAR_H
+#define GAMUSINOFLUIDVISCOSITYLINEAR_H
 
-#include "GolemFluidViscosity.h"
+#include "GamusinoFluidViscosity.h"
 
-class GolemFluidViscosityLinear;
+class GamusinoFluidViscosityLinear;
 
 template <>
-InputParameters validParams<GolemFluidViscosityLinear>();
+InputParameters validParams<GamusinoFluidViscosityLinear>();
 
-class GolemFluidViscosityLinear : public GolemFluidViscosity
+class GamusinoFluidViscosityLinear : public GamusinoFluidViscosity
 {
 public:
-  GolemFluidViscosityLinear(const InputParameters & parameters);
+  GamusinoFluidViscosityLinear(const InputParameters & parameters);
   Real computeViscosity(Real temperature, Real, Real mu0) const;
   Real computedViscositydT(Real temperature, Real, Real, Real mu0) const;
   Real computedViscositydp(Real, Real, Real) const;
@@ -21,4 +21,4 @@ private:
   Real _Tv;
 };
 
-#endif // GOLEMFLUIDVISCOSITYLINEAR_H
+#endif // GAMUSINOFLUIDVISCOSITYLINEAR_H

@@ -1,4 +1,3 @@
-
 #ifndef GAMUSINOSUPG_H
 #define GAMUSINOSUPG_H
 

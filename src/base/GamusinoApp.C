@@ -5,26 +5,58 @@
 #include "MooseSyntax.h"
 
 // Actions
+#include "GamusinoPressureAction.h"
 
 // Materials
+#include "GMSMaterial.h"
 #include "GamusinoMaterialBase.h"
+#include "GamusinoMaterialH.h"
+#include "GamusinoMaterialT.h"
+#include "GamusinoMaterialTH.h"
+#include "GamusinoMaterialMElastic.h"
+#include "GamusinoMaterialMInelastic.h"
+#include "GamusinoDruckerPrager.h"
 
 // Kernels
 #include "PoreFluidInertialForceCoupling.h"
 #include "DynamicDarcyFlow.h"
 #include "MassConservationNewmark.h"
+#include "GMSEnergyTimeDerivative.h"
+#include "GMSEnergyResidual.h"
+#include "GMSMassResidual.h"
+#include "GamusinoKernelTimeH.h"
+#include "GamusinoKernelTimeT.h"
+#include "GamusinoKernelH.h"
+#include "GamusinoKernelT.h"
+#include "GamusinoKernelTH.h"
+#include "GamusinoKernelM.h"
+#include "GamusinoKernelHPoroElastic.h"
 
 // AuxKernels
 #include "NewmarkPoreFluidAccelAux.h"
+#include "GamusinoDarcyVelocity.h"
+#include "GamusinoFluidVelocity.h"
+#include "GamusinoStress.h"
+#include "GamusinoStrain.h"
+#include "GamusinoThermalStress.h"
+#include "GamusinoEqvInelasticStrain.h"
 
 // DiracKernels
+#include "GamusinoDiracKernelTH.h"
 
 // BCs
 #include "PorePressureBC.h"
+#include "GamusinoConvectiveTHBC.h"
+#include "GamusinoVelocityBC.h"
+#include "GamusinoHeatFlowBC.h"
+#include "GamusinoPressureBC.h"
 
 // Controls
+#include "GamusinoTimeControl.h"
 
 // Functions
+#include "GamusinoFunctionBCFromFile.h"
+#include "GamusinoFunctionReadFile.h"
 
 // UserObjects
 #include "GamusinoScaling.h"
@@ -32,12 +64,19 @@
 #include "GamusinoPropertyReadFile.h"
 #include "GamusinoFluidDensityConstant.h"
 #include "GamusinoFluidDensityLinear.h"
+#include "GamusinoFluidDensityIAPWS.h"
 #include "GamusinoFluidViscosityConstant.h"
 #include "GamusinoFluidViscosityLinear.h"
+#include "GamusinoFluidViscosityIAPWS.h"
 #include "GamusinoPorosityConstant.h"
+#include "GamusinoPorosityTHM.h"
 #include "GamusinoPermeabilityConstant.h"
 #include "GamusinoPermeabilityKC.h"
 #include "GamusinoPermeabilityCubicLaw.h"
+#include "GamusinoHardeningConstant.h"
+#include "GamusinoHardeningCubic.h"
+#include "GamusinoHardeningExponential.h"
+#include "GamusinoHardeningPlasticSaturation.h"
 
 template<>
 InputParameters validParams<GamusinoApp>()
@@ -85,24 +124,55 @@ void
 GamusinoApp::registerObjects(Factory & factory)
 {
   // Materials
+  registerMaterial(GMSMaterial);
   registerMaterial(GamusinoMaterialBase);
+  registerMaterial(GamusinoMaterialH);
+  registerMaterial(GamusinoMaterialT);
+  registerMaterial(GamusinoMaterialTH);
+  registerMaterial(GamusinoMaterialMElastic);
+  registerMaterial(GamusinoMaterialMInelastic);
+  registerMaterial(GamusinoDruckerPrager);
 
   // Kernels
   registerKernel(PoreFluidInertialForceCoupling);
   registerKernel(DynamicDarcyFlow);
   registerKernel(MassConservationNewmark);
+  registerKernel(GMSEnergyTimeDerivative);
+  registerKernel(GMSEnergyResidual);
+  registerKernel(GMSMassResidual);
+  registerKernel(GamusinoKernelTimeH);
+  registerKernel(GamusinoKernelTimeT);
+  registerKernel(GamusinoKernelH);
+  registerKernel(GamusinoKernelT);
+  registerKernel(GamusinoKernelTH);
+  registerKernel(GamusinoKernelM);
+  registerKernel(GamusinoKernelHPoroElastic);
 
   // AuxKernels
   registerAux(NewmarkPoreFluidAccelAux);
+  registerAux(GamusinoDarcyVelocity);
+  registerAux(GamusinoFluidVelocity);
+  registerAux(GamusinoStress);
+  registerAux(GamusinoStrain);
+  registerAux(GamusinoThermalStress);
+  registerAux(GamusinoEqvInelasticStrain);
 
-  // DriacKernels
+  // DiracKernels
+  registerDiracKernel(GamusinoDiracKernelTH);
 
   // BCs
   registerBoundaryCondition(PorePressureBC);
+  registerBoundaryCondition(GamusinoConvectiveTHBC);
+  registerBoundaryCondition(GamusinoVelocityBC);
+  registerBoundaryCondition(GamusinoHeatFlowBC);
+  registerBoundaryCondition(GamusinoPressureBC);
 
   // Controls
+  registerControl(GamusinoTimeControl);
 
   // Function
+  registerFunction(GamusinoFunctionBCFromFile);
+  registerFunction(GamusinoFunctionReadFile);
 
   // UserObjects
   registerUserObject(GamusinoScaling);
@@ -110,13 +180,19 @@ GamusinoApp::registerObjects(Factory & factory)
   registerUserObject(GamusinoPropertyReadFile);
   registerUserObject(GamusinoFluidDensityConstant);
   registerUserObject(GamusinoFluidDensityLinear);
+  registerUserObject(GamusinoFluidDensityIAPWS);
   registerUserObject(GamusinoFluidViscosityConstant);
   registerUserObject(GamusinoFluidViscosityLinear);
+  registerUserObject(GamusinoFluidViscosityIAPWS);
   registerUserObject(GamusinoPorosityConstant);
   registerUserObject(GamusinoPorosityTHM);
   registerUserObject(GamusinoPermeabilityConstant);
   registerUserObject(GamusinoPermeabilityKC);
   registerUserObject(GamusinoPermeabilityCubicLaw);
+  registerUserObject(GamusinoHardeningConstant);
+  registerUserObject(GamusinoHardeningCubic);
+  registerUserObject(GamusinoHardeningExponential);
+  registerUserObject(GamusinoHardeningPlasticSaturation);
 
     Registry::registerObjectsTo(factory, {"GamusinoApp"});
 }
