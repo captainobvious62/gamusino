@@ -8,22 +8,36 @@ InputParameters
 validParams<GamusinoMaterialH>()
 {
   InputParameters params = validParams<GamusinoMaterialBase>();
-  params.addCoupledVar("displacements", "The displacement vector");
-  params.addParam<MooseEnum>(
-      "permeability_type",
-      GamusinoMaterialH::permeabilityType() = "isotropic",
-      "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-  params.addParam<std::vector<Real>>("permeability_initial", "The initial permeability [m2]");
-  params.addParam<Real>("fluid_viscosity_initial", 1e-3, "The fluid viscosity [Pa s].");
-  params.addParam<Real>("fluid_modulus", 1.0e+99, "The fluid modulus [Pa].");
+  params.addCoupledVar("displacements",
+                       "The displacement vector");
+
+  params.addParam<MooseEnum>("permeability_type",
+        GamusinoMaterialH::permeabilityType() = "isotropic",
+        "The permeability distribution type [isotropic, orthotropic, anisotropic].");
+
+  params.addParam<std::vector<Real>>("permeability_initial",
+        "The initial permeability [m**2]");
+
+  params.addParam<Real>("fluid_viscosity_initial",
+        1e-3,
+        "The fluid viscosity [Pa*s].");
+
+  params.addParam<Real>("fluid_modulus",
+        1.0e+99,
+        "The fluid modulus [Pa].");
+
   params.addRequiredParam<UserObjectName>("fluid_density_uo",
                                           "The name of the fluid density user object.");
+
   params.addRequiredParam<UserObjectName>("fluid_viscosity_uo",
                                           "The name of the fluid viscosity user object.");
+
   params.addRequiredParam<UserObjectName>("permeability_uo",
                                           "The name of the permeability user object.");
+
   params.addClassDescription("This is the base class for hydraulic Gamusino material properties. NB: "
-                             "The rotation of the permeability tensor is done here.");
+                             "The rotation of the permeability tensor is performed here.");
+
   return params;
 }
 

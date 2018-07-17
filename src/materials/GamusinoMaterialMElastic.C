@@ -10,55 +10,136 @@ InputParameters
 validParams<GamusinoMaterialMElastic>()
 {
   InputParameters params = validParams<GamusinoMaterialBase>();
-  params.addRequiredCoupledVar("displacements", "The displacement variables vector.");
-  params.addCoupledVar("pore_pressure", "The pore pressure variable.");
-  params.addCoupledVar("temperature", "The temperature variable.");
+  params.addRequiredCoupledVar(
+        "displacements",
+        "The displacement variables vector.");
+
+  params.addCoupledVar(
+        "pore_pressure",
+        "The pore pressure variable.");
+
+  params.addCoupledVar(
+        "temperature",
+        "The temperature variable.");
+
   params.addParam<MooseEnum>("strain_model",
                              GamusinoMaterialMElastic::strainModel() = "small_strain",
                              "The strain model to be used.");
+
   params.addParam<bool>(
-      "volumetric_locking_correction", false, "Flag to correct volumetric locking");
-  params.addParam<Real>("bulk_modulus", "The bulk modulus [Pa].");
-  params.addParam<Real>("lame_modulus", "The first lame constant [Pa].");
-  params.addParam<Real>("poisson_ratio", "The Poisson's ratio [-].");
-  params.addParam<Real>("shear_modulus", "The shear modulus [Pa].");
-  params.addParam<Real>("young_modulus", "The young modulus [Pa].");
+         "volumetric_locking_correction",
+         false,
+         "Flag to correct volumetric locking");
+
+  params.addParam<Real>(
+        "bulk_modulus",
+        "The bulk modulus [Pa].");
+
+  params.addParam<Real>(
+        "lame_modulus",
+        "The first lame constant [Pa].");
+
+  params.addParam<Real>(
+        "poisson_ratio",
+        "The Poisson's ratio [-].");
+
+  params.addParam<Real>(
+        "shear_modulus",
+        "The shear modulus [Pa].");
+
+  params.addParam<Real>(
+        "young_modulus",
+        "The youngs modulus [Pa].");
+
   params.addParam<std::vector<FunctionName>>(
       "background_stress",
       "A list of functions describing the background stress. If provided, "
       "there must be 3 of these, corresponding to the xx, yy, zz components.");
-  params.addParam<Real>("solid_bulk_modulus", 1e+99, "The solid bulk modulus [Pa].");
-  params.addParam<Real>("end_bulk_modulus", "The end bulk modulus for crack closure model [Pa].");
-  params.addParam<Real>("closure_pressure", "The closure pressure for crack closure model [Pa].");
+
+  params.addParam<Real>(
+        "solid_bulk_modulus",
+        1e+99,
+        "The solid bulk modulus [Pa].");
+
+  params.addParam<Real>(
+        "end_bulk_modulus",
+        "The end bulk modulus for crack closure model [Pa].");
+
+  params.addParam<Real>(
+        "closure_pressure",
+        "The closure pressure for crack closure model [Pa].");
+  // ***************************************************************************
   // GamusinoMaterialT
   params.addParam<bool>(
-      "has_heat_source_sink", false, "Has source/sink of temperature considered?");
-  params.addParam<Real>("fluid_thermal_conductivity_initial",
-                        "The fluid thermal conductivity [W/m/K].");
-  params.addParam<Real>("solid_thermal_conductivity_initial",
-                        "The solid thermal conductivity [W/m/K].");
-  params.addParam<Real>("fluid_heat_capacity_initial", 0.0, "The fluid heat capacity [J/m^3/K].");
-  params.addParam<Real>("solid_heat_capacity_initial", 0.0, "The solid heat capacity [J/m^3/K].");
-  params.addParam<Real>("heat_source_sink", 0.0, "The heat source or sink [W/m^3].");
+      "has_heat_source_sink",
+      false,
+      "Has source/sink of temperature considered?");
+
+  params.addParam<Real>(
+        "fluid_thermal_conductivity_initial",
+        "The fluid thermal conductivity [W/m/K].");
+
+  params.addParam<Real>(
+        "solid_thermal_conductivity_initial",
+        "The solid thermal conductivity [W/m/K].");
+
+  params.addParam<Real>(
+        "fluid_heat_capacity_initial",
+        0.0,
+        "The fluid heat capacity [J/m^3/K].");
+
+  params.addParam<Real>(
+        "solid_heat_capacity_initial",
+        0.0,
+        "The solid heat capacity [J/m^3/K].");
+
+  params.addParam<Real>("heat_source_sink",
+        0.0,
+        "The heat source or sink [W/m^3].");
+
+  // ***************************************************************************
   // GamusinoMaterialH
   params.addParam<MooseEnum>(
       "permeability_type",
       GamusinoMaterialMElastic::permeabilityType() = "isotropic",
       "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-  params.addParam<std::vector<Real>>("permeability_initial", "The initial permeability [m2]");
-  params.addParam<Real>("fluid_viscosity_initial", 1e-3, "The fluid viscosity [Pa s].");
-  params.addParam<Real>("fluid_modulus", 1.0e+99, "The fluid modulus [Pa].");
+
+  params.addParam<std::vector<Real>>(
+      "permeability_initial",
+      "The initial permeability [m^2]");
+
+  params.addParam<Real>(
+      "fluid_viscosity_initial",
+      1e-3,
+      "The fluid viscosity [Pa*s].");
+
+  params.addParam<Real>(
+      "fluid_modulus",
+      1.0e+99,
+      "The fluid modulus [Pa].");
+
   params.addRequiredParam<UserObjectName>("fluid_density_uo",
                                           "The name of the fluid density user object");
+
   params.addParam<UserObjectName>("fluid_viscosity_uo",
                                   "The name of the fluid viscosity user object");
+
   params.addParam<UserObjectName>("permeability_uo", "The name of the permeability user object");
+
+  // ***************************************************************************
   // GamusinoMaterialTH
-  params.addParam<bool>("has_lumped_mass_matrix", false, "Has lumped mass matrix?");
-  params.addParam<UserObjectName>("supg_uo", "The name of the SUPG user object.");
+  params.addParam<bool>(
+        "has_lumped_mass_matrix",
+        false,
+        "Has lumped mass matrix?");
+
+  params.addParam<UserObjectName>(
+        "supg_uo",
+        "The name of the SUPG user object.");
+
   return params;
 }
-
+/* -------------------------------------------------------------------------- */
 GamusinoMaterialMElastic::GamusinoMaterialMElastic(const InputParameters & parameters)
   : GamusinoMaterialBase(parameters),
     _ndisp(coupledComponents("displacements")),

@@ -7,30 +7,69 @@ InputParameters
 validParams<GamusinoMaterialTH>()
 {
   InputParameters params = validParams<GamusinoMaterialH>();
-  params.addRequiredCoupledVar("temperature", "The temperature");
-  params.addRequiredCoupledVar("pore_pressure", "The pore pressure");
+  params.addRequiredCoupledVar(
+    "temperature",
+    "The temperature");
+
+  params.addRequiredCoupledVar(
+    "pore_pressure",
+    "The pore pressure");
+
   params.addParam<bool>(
-      "has_heat_source_sink", false, "Has source/sink of temperature considered?");
-  params.addParam<bool>("has_lumped_mass_matrix", false, "Has lumped mass matrix?");
-  params.addParam<bool>("has_boussinesq", false, "Has Boussinesq terms?");
-  params.addRequiredParam<Real>("fluid_thermal_conductivity_initial",
-                                "The fluid thermal conductivity [W/m/K].");
-  params.addRequiredParam<Real>("solid_thermal_conductivity_initial",
-                                "The solid thermal conductivity [W/m/K].");
-  params.addParam<Real>("fluid_heat_capacity_initial", 0.0, "The fluid heat capacity [J/m^3/K].");
-  params.addParam<Real>("solid_heat_capacity_initial", 0.0, "The solid heat capacity [J/m^3/K].");
-  params.addParam<Real>("heat_source_sink", 0.0, "The heat source or sink [W/m^3].");
-  params.addParam<UserObjectName>("supg_uo", "The name of the SUPG user object.");
-  params.addRequiredParam<UserObjectName>("fluid_density_uo",
-                                          "The name of the fluid density user object.");
+      "has_heat_source_sink",
+      false,
+      "Has source/sink of temperature considered?");
+
+  params.addParam<bool>(
+    "has_lumped_mass_matrix",
+    false,
+    "Has lumped mass matrix?");
+
+  params.addParam<bool>(
+    "has_boussinesq",
+    false,
+    "Has Boussinesq terms?");
+
+  params.addRequiredParam<Real>(
+    "fluid_thermal_conductivity_initial",
+    "The fluid thermal conductivity [W/m/K].");
+
+  params.addRequiredParam<Real>(
+    "solid_thermal_conductivity_initial",
+    "The solid thermal conductivity [W/m/K].");
+
+  params.addParam<Real>(
+    "fluid_heat_capacity_initial",
+    0.0,
+    "The fluid heat capacity [J/m^3/K].");
+
+  params.addParam<Real>(
+    "solid_heat_capacity_initial",
+    0.0,
+    "The solid heat capacity [J/m^3/K].");
+
+  params.addParam<Real>(
+    "heat_source_sink",
+    0.0,
+    "The heat source or sink [W/m^3].");
+
+  params.addParam<UserObjectName>(
+    "supg_uo",
+    "The name of the SUPG user object.");
+
+  params.addRequiredParam<UserObjectName>(
+    "fluid_density_uo",
+    "The name of the fluid density user object.");
+
   params.addRequiredParam<UserObjectName>("fluid_viscosity_uo",
                                           "The name of the fluid viscosity user object.");
+                                          
   params.addClassDescription("This is the base class for Thermo-Hydraulic (TH) Gamusino material "
-                             "properties. It inherits from GolmMaterialH all related hydraulic "
+                             "properties. It inherits from GamusinoMaterialH all related hydraulic "
                              "properties.");
   return params;
 }
-
+/* -------------------------------------------------------------------------- */
 GamusinoMaterialTH::GamusinoMaterialTH(const InputParameters & parameters)
   : GamusinoMaterialH(parameters),
     _has_T_source_sink(getParam<bool>("has_heat_source_sink")),

@@ -12,20 +12,47 @@ validParams<GMSMaterial>()
   InputParameters params = validParams<Material>();
   params.addClassDescription("material class to run steady pressure load and steady/transient heat "
                              "with parameters from file.");
-  params.addCoupledVar("temperature", "temperature");
-  params.addCoupledVar("load", "load");
-  params.addParam<bool>("has_lambda_pT", false, "Has T-dependent thermal conductivity?");
-  params.addParam<Real>("density", "The bulk density.");
-  params.addParam<Real>("thermal_conductivity", "The bulk thermal conductivity.");
-  params.addParam<Real>("heat_capacity", "The bulk heat capacity.");
-  params.addParam<Real>("heat_production", "The heat production.");
-  params.addParam<Real>("scale_factor", "The scale factor.");
+
+  params.addCoupledVar(
+    "temperature",
+    "temperature");
+
+  params.addCoupledVar(
+    "load",
+    "load");
+
+  params.addParam<bool>(
+    "has_lambda_pT",
+    false,
+    "Has T-dependent thermal conductivity?");
+
+  params.addParam<Real>(
+    "density",
+    "The bulk density [kg/m^3].");
+
+  params.addParam<Real>(
+    "thermal_conductivity",
+    "The bulk thermal conductivity.");
+
+  params.addParam<Real>(
+    "heat_capacity",
+    "The bulk heat capacity.");
+
+  params.addParam<Real>(
+    "heat_production",
+    "The heat production.");
+
+  params.addParam<Real>(
+    "scale_factor",
+    "The scale factor.");
+
   params.addParam<UserObjectName>(
       "read_prop_user_object",
       "The ReadPropertyFile GeneralUserObject to read specific property values from file.");
+
   return params;
 }
-
+/* -------------------------------------------------------------------------- */
 GMSMaterial::GMSMaterial(const InputParameters & parameters)
   : Material(parameters),
     // Coupled variables

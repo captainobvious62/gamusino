@@ -18,7 +18,7 @@ validParams<GamusinoMaterialT>()
       "This is the base class for thermal (conductive) Gamusino material properties.");
   return params;
 }
-
+/* -------------------------------------------------------------------------- */
 GamusinoMaterialT::GamusinoMaterialT(const InputParameters & parameters)
   : GamusinoMaterialBase(parameters),
     _has_T_source_sink(getParam<bool>("has_heat_source_sink")),

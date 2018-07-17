@@ -9,17 +9,20 @@ validParams<GamusinoPQPlasticity>()
   InputParameters params = validParams<GamusinoInelasticBase>();
   params.addClassDescription(
       "Base class for plasticity return-map algorithm for (P, Q) plastic models.");
+      
   params.addRangeCheckedParam<unsigned int>(
       "max_NR_iterations",
       20,
       "max_NR_iterations>0",
       "Maximum number of Newton-Raphson iterations allowed during the return-map algorithm");
+
   params.addRequiredParam<Real>("yield_function_tol",
                                 "The return-map process will be deemed to have converged if all "
                                 "yield functions are within yield_function_tol of zero.  If this "
                                 "is set very low then precision-loss might be encountered: if the "
                                 "code detects precision loss then it also deems the return-map "
                                 "process has converged.");
+
   params.addParam<Real>("min_step_size",
                         1.0,
                         "In order to help the Newton-Raphson procedure, the applied strain "
@@ -28,7 +31,7 @@ validParams<GamusinoPQPlasticity>()
                         "increase max_NR_iterations rather than decrease this parameter.");
   return params;
 }
-
+/* -------------------------------------------------------------------------- */
 GamusinoPQPlasticity::GamusinoPQPlasticity(const InputParameters & parameters)
   : GamusinoInelasticBase(parameters),
     _max_nr_its(getParam<unsigned>("max_NR_iterations")),

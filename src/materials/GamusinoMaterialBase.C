@@ -9,33 +9,56 @@ InputParameters
 validParams<GamusinoMaterialBase>()
 {
   InputParameters params = validParams<Material>();
-  params.addParam<Real>("fluid_density_initial", 0.0, "The initial density of the fluid [kg/m^3].");
-  params.addParam<Real>(
-      "solid_density_initial", 0.0, "The initial density of the solid matrix [kg/m^3].");
-  params.addParam<Real>("porosity_initial", 0.0, "The initial porosity [-].");
-  params.addParam<bool>("has_gravity", false, "Has gravity on?");
-  params.addParam<Real>(
-      "gravity_acceleration", 9.81, "The magnitude of the gravity acceleration [m/s^2].");
-  params.addParam<Real>(
-      "scaling_factor_initial", 1.0, "The scaling factor for lower dimensional element [m].");
+  params.addParam<Real>("fluid_density_initial",
+                        0.0,
+                        "The initial density of the fluid [kg/m^3].");
+
+  params.addParam<Real>("solid_density_initial",
+                        0.0,
+                        "The initial density of the solid matrix [kg/m^3].");
+
+  params.addParam<Real>("porosity_initial",
+                        0.0,
+                        "The initial porosity [frac].");
+
+  params.addParam<bool>("has_gravity",
+                        false,
+                        "Is gravity on?");
+
+  params.addParam<Real>("gravity_acceleration",
+                        9.81,
+                        "The magnitude of the gravity acceleration [m/s^2].");
+
+  params.addParam<Real>("scaling_factor_initial",
+                        1.0,
+                        "The scaling factor for lower dimensional element [m].");
+
   params.addParam<FunctionName>("function_scaling",
                                 "The name of the function for updating the scaling_factor.");
+
   params.addParam<Real>("fluid_thermal_expansion",
                         0.0,
                         "The volumetric thermal expansion coefficient of the fluid [1/K].");
+
   params.addParam<Real>("solid_thermal_expansion",
                         0.0,
                         "The volumetric thermal expansion coefficient of the solid [1/K].");
+
   params.addParam<MooseEnum>("material_type",
                              GamusinoMaterialBase::materialType() = "unit",
                              "The type of the geological material [unit, frac, well].");
-  params.addParam<UserObjectName>("scaling_uo", "The name of the scaling user object.");
-  params.addRequiredParam<UserObjectName>("porosity_uo", "The name of the porosity user object.");
+
+  params.addParam<UserObjectName>("scaling_uo",
+                                  "The name of the scaling user object.");
+
+  params.addRequiredParam<UserObjectName>("porosity_uo",
+                                          "The name of the porosity user object.");
+
   params.addClassDescription("This is the base class for all Gamusino material properties. It needs "
                              "to be inherited by all other classes.");
   return params;
 }
-
+/* -------------------------------------------------------------------------- */
 GamusinoMaterialBase::GamusinoMaterialBase(const InputParameters & parameters)
   : Material(parameters),
     _has_scaled_properties(isParamValid("scaling_uo")),
