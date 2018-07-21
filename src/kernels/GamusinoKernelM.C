@@ -12,12 +12,21 @@ validParams<GamusinoKernelM>()
   InputParameters params = validParams<Kernel>();
   params.addRequiredParam<unsigned int>("component",
                                         "The direction this kernel acts onto (0=x, 1=y, 2=z).");
-  params.addRequiredCoupledVar("displacements", "The displacement variables vector.");
-  params.addCoupledVar("pore_pressure", "The pore pressure variable.");
-  params.addCoupledVar("temperature", "The temperature variable.");
+
+  params.addRequiredCoupledVar("displacements",
+                               "The displacement variables vector.");
+
+  params.addCoupledVar("pore_pressure",
+                      "The pore pressure variable.");
+
+  params.addCoupledVar("temperature",
+                       "The temperature variable.");
+
   params.set<bool>("use_displaced_mesh") = false;
+
   params.addParam<bool>(
       "use_finite_deform_jacobian", false, "Jacobian for corotational finite strain");
+
   return params;
 }
 
