@@ -10,8 +10,11 @@
 #
 [Mesh]
   type = GeneratedMesh
-  displacements = 'disp_x disp_y disp_z'
-  dim = 3
+  displacements = 'disp_x disp_y'
+  dim = 2
+  nx = 10
+  ny = 10
+  nz = 0
 []
 
 [Variables]
@@ -23,20 +26,16 @@
     order = FIRST
     family = LAGRANGE
   []
-  [disp_z]
-    order = FIRST
-    family = LAGRANGE
-  []
 []
 
 [Kernels]
   [TensorMechanics]
-    displacements = 'disp_x disp_y disp_z'
+    displacements = 'disp_x disp_y'
   []
   [Gravity]
     type = Gravity
     value = 9.81
-    variable = disp_z
+    variable = disp_y
   []
 []
 
@@ -53,12 +52,6 @@
     boundary = 'bottom'
     value = 0.0
   []
-  [no_z]
-    type = DirichletBC
-    variable = disp_z
-    boundary = 'bottom'
-    value = 0.0
-  []
 []
 
 [Materials]
@@ -71,7 +64,7 @@
   [strain]
     type = ComputeSmallStrain
     block = '0'
-    displacements = 'disp_x disp_y disp_z'
+    displacements = 'disp_x disp_y'
   []
   [stress]
     type = ComputeLinearElasticStress
