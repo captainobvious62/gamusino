@@ -1,19 +1,22 @@
-#
-# Pressure Test
-#
-# This test is designed to apply a gravity body force.
-#
-# The mesh is composed of one block with a single element.
-# The bottom is fixed in all three directions.  Poisson's ratio
-# is zero and the density is 20/9.81
-# which makes it trivial to check displacements.
-#
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
 [Mesh]
   type = GeneratedMesh
   displacements = 'disp_x disp_y'
   dim = 2
-  nx = 10
-  ny = 10
+  nx = 25
+  ny = 25
   nz = 0
   zmax = 0
   ymax = 100 # m
@@ -40,13 +43,9 @@
 []
 
 [Kernels]
-  inactive = 'TensorMechanics Gravity'
-  [TensorMechanics]
-    displacements = 'disp_x disp_y'
-  []
   [Gravity]
     type = Gravity
-    value = 9.80 # m/s**2
+    value = -9.80 # m/s**2
     variable = disp_y
   []
   [poro_x]
@@ -64,7 +63,7 @@
   [flux]
     type = PorousFlowAdvectiveFlux
     variable = porepressure
-    gravity = '0 0 0'
+    gravity = '0 -9.8 0' # m / s**2
     fluid_component = 0
   []
   [grad_stress_x]
@@ -82,53 +81,84 @@
     PorousFlowDictator = Franco
     variable = porepressure
   []
+  [P_time_deriv]
+    type = PorousFlowMassTimeDerivative
+    fluid_component = 0
+    variable = porepressure
+  []
 []
 
 [BCs]
-  [no_x]
+  inactive = 'roller_xmin roller_xmax'
+  [roller_xmin]
     type = DirichletBC
     variable = disp_x
-    boundary = 'bottom'
-    value = 0.0
+    boundary = 'left'
+    value = 0.0 # m
   []
-  [no_y]
+  [roller_xmax]
+    type = DirichletBC
+    variable = disp_x
+    boundary = 'right'
+    value = 0.0 # m
+  []
+  [roller_ymin]
     type = DirichletBC
     variable = disp_y
     boundary = 'bottom'
-    value = 0.0
+    value = 0.0 # m
   []
   [ymax_drained]
     type = DirichletBC
     variable = porepressure
     boundary = 'top'
+    value = 0.0 # Pa
+  []
+  [noflow_xmin]
+    type = NeumannBC
+    variable = porepressure
+    boundary = 'left'
+    value = 0.0
+  []
+  [noflow_xmax]
+    type = NeumannBC
+    variable = porepressure
+    boundary = 'right'
+    value = 0.0
+  []
+  [noflow_ymin]
+    type = NeumannBC
+    variable = porepressure
+    boundary = 'bottom'
     value = 0
   []
 []
 
 [Modules]
-  [./FluidProperties]
-    [./simple_fluid]
+  [FluidProperties]
+    [simple_fluid]
       type = SimpleFluidProperties
-      bulk_modulus = 13
-      density0 = 1
-      thermal_expansion = 0
-    [../]
-  [../]
+      density0 = 999.526 # kg / m**3
+      bulk_modulus = 2E9 # Pa
+      viscosity = 0.001 # Pa * s
+      cv = 4180
+      thermal_expansion = 0.0
+    []
+  []
 []
 
 [Materials]
-  [./temperature]
+  [temperature]
     type = PorousFlowTemperature
-  [../]
-  [./temperature_nodal]
+  []
+  [temperature_nodal]
     type = PorousFlowTemperature
     at_nodes = true
-  [../]
-  [Elasticity_tensor]
+  []
+  [elasticity_tensor]
     type = ComputeElasticityTensor
-    block = '0'
+    C_ijkl = '8.65E9 5.77E9' # young = 15GPa, poisson = 0.3
     fill_method = symmetric_isotropic
-    C_ijkl = '0 0.5e6'
   []
   [strain]
     type = ComputeSmallStrain
@@ -139,107 +169,132 @@
     type = ComputeLinearElasticStress
     block = '0'
   []
-  [./eff_fluid_pressure]
+  [eff_fluid_pressure]
     type = PorousFlowEffectiveFluidPressure
-  [../]
-  [./eff_fluid_pressure_nodal]
+  []
+  [eff_fluid_pressure_nodal]
     type = PorousFlowEffectiveFluidPressure
     at_nodes = true
-  [../]
+  []
   [density]
     type = GenericConstantMaterial
-    block = '0'
     prop_names = 'density'
-    prop_values = '2.0387'
+    prop_values = '2386.0' # = (1-0.9)*2540 + 0.1*999.526
   []
   [biot_coefficient]
     type = GenericConstantMaterial
     prop_values = '0.9'
     prop_names = 'biot_coefficient'
   []
- [./vol_strain]
+  [vol_strain]
     type = PorousFlowVolumetricStrain
-  [../]
-  [./ppss]
+  []
+  [ppss]
     type = PorousFlow1PhaseFullySaturated
-    porepressure = porepressure
-  [../]
-  [./ppss_nodal]
+    porepressure = 'porepressure'
+  []
+  [ppss_nodal]
     type = PorousFlow1PhaseFullySaturated
     at_nodes = true
-    porepressure = porepressure
-  [../]
-  [./massfrac]
+    porepressure = 'porepressure'
+  []
+  [massfrac]
     type = PorousFlowMassFraction
     at_nodes = true
-  [../]
-  [./simple_fluid]
+  []
+  [simple_fluid]
     type = PorousFlowSingleComponentFluid
     fp = simple_fluid
     phase = 0
     at_nodes = true
-  [../]
-  [./simple_fluid_qp]
+  []
+  [simple_fluid_qp]
     type = PorousFlowSingleComponentFluid
     fp = simple_fluid
     phase = 0
-  [../]
-  [./dens_all]
+  []
+  [dens_all]
     type = PorousFlowJoiner
     at_nodes = true
     material_property = PorousFlow_fluid_phase_density_nodal
-  [../]
-  [./dens_all_at_quadpoints]
+  []
+  [dens_all_at_quadpoints]
     type = PorousFlowJoiner
     material_property = PorousFlow_fluid_phase_density_qp
     at_nodes = false
-  [../]
-  [./visc_all]
+  []
+  [visc_all]
     type = PorousFlowJoiner
     at_nodes = true
     material_property = PorousFlow_viscosity_nodal
-  [../]
-  [./porosity]
+  []
+  [porosity]
     type = PorousFlowPorosity
     fluid = true
     mechanical = true
     at_nodes = true
-    porosity_zero = 0.1
+    porosity_zero = '0.1'
     biot_coefficient = 0.9
-    solid_bulk = 2
-  [../]
-  [./porosity_qp]
+    solid_bulk = 2E9
+  []
+  [porosity_qp]
     type = PorousFlowPorosity
     fluid = true
     mechanical = true
-    porosity_zero = 0.1
+    porosity_zero = '0.1'
     biot_coefficient = 0.9
-    solid_bulk = 2
-  [../]
-  [./permeability]
+    solid_bulk = 2E9
+  []
+  [permeability]
     type = PorousFlowPermeabilityConst
-    permeability = '1 0 0   0 1 0   0 0 1' # unimportant
-  [../]
-  [./relperm]
+    permeability = '1.0E-12 0 0   0 1.0E-12 0   0 0 1.0E-12' # m**2
+  []
+  [relperm]
     type = PorousFlowRelativePermeabilityCorey
     at_nodes = true
     n = 0 # unimportant in this fully-saturated situation
     phase = 0
-  [../]
-  [./relperm_all]
+  []
+  [relperm_all]
     type = PorousFlowJoiner
     at_nodes = true
     material_property = PorousFlow_relative_permeability_nodal
-  [../]
+  []
 []
 
 [Executioner]
   type = Transient
   nl_abs_tol = 1e-10
   l_max_its = 20
-  dt = 0.1
+  dt = 86400.0 # sec
   solve_type = PJFNK
-  end_time = 1
+  num_steps = 10
+  nl_max_its = 500
+[]
+
+[Preconditioning]
+  inactive = 'superlu sub_pc_superlu'
+  [original]
+    type = SMP
+    full = true
+    petsc_options = '-snes_monitor -snes_linesearch_monitor'
+    petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
+    petsc_options_value = 'gmres asm 1E0 1E-10 200 500 lu NONZERO'
+  []
+  [superlu]
+    type = SMP
+    full = true
+    petsc_options = '-ksp_diagonal_scale -ksp_diagonal_scale_fix'
+    petsc_options_iname = '-ksp_type -pc_type -pc_factor_mat_solver_package'
+    petsc_options_value = 'gmres lu superlu_dist'
+  []
+  [sub_pc_superlu]
+    type = SMP
+    full = true
+    petsc_options = '-ksp_diagonal_scale -ksp_diagonal_scale_fix'
+    petsc_options_iname = '-ksp_type -pc_type -sub_pc_type -sub_pc_factor_shift_type -sub_pc_factor_mat_solver_package'
+    petsc_options_value = 'gmres asm lu NONZERO superlu_dist'
+  []
 []
 
 [Outputs]
@@ -271,10 +326,10 @@
     family = MONOMIAL
     order = CONSTANT
   []
-  [./porosity]
+  [porosity]
     order = CONSTANT
     family = MONOMIAL
-  [../]
+  []
 []
 
 [AuxKernels]
@@ -299,9 +354,9 @@
     index_i = 1
     variable = stress_yy
   []
-  [./porosity]
+  [porosity]
     type = MaterialRealAux
     variable = porosity
     property = PorousFlow_porosity_qp
-  [../]
+  []
 []
