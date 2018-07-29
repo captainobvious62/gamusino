@@ -3,7 +3,7 @@
 
 namespace GamusinoM
 {
-
+/* -------------------------------------------------------------------------- */
 Real
 elasticJacobian(const RankFourTensor & r4t,
                 unsigned int i,
@@ -49,14 +49,14 @@ elasticJacobian(const RankFourTensor & r4t,
      ) * gt2;
   // clang-format on
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 getIsotropicShearModulus(const RankFourTensor & elasticity_tensor)
 {
   const Real shear_modulus = elasticity_tensor(0, 1, 0, 1);
   return shear_modulus;
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 getIsotropicBulkModulus(const RankFourTensor & elasticity_tensor)
 {
@@ -67,7 +67,7 @@ getIsotropicBulkModulus(const RankFourTensor & elasticity_tensor)
   const Real bulk_modulus = lambda + 2.0 * shear_modulus / 3.0;
   return bulk_modulus;
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 getIsotropicYoungsModulus(const RankFourTensor & elasticity_tensor)
 {

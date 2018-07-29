@@ -72,6 +72,10 @@
     order = CONSTANT
     family = MONOMIAL
   [../]
+  [./porosity]
+    order = CONSTANT
+    family = MONOMIAL
+  [../]
 []
 
 [AuxKernels]

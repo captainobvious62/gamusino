@@ -14,6 +14,7 @@ GamusinoPorosityTHM::GamusinoPorosityTHM(const InputParameters & parameters) : G
 {
 }
 
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoPorosityTHM::computePorosity(
     Real phi_old, Real dphi_dev, Real dphi_dpf, Real dphi_dT, Real dev, Real dpf, Real dT) const
@@ -21,18 +22,21 @@ GamusinoPorosityTHM::computePorosity(
   return phi_old + dphi_dev * dev + dphi_dpf * dpf + dphi_dT * dT;
 }
 
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoPorosityTHM::computedPorositydev(Real phi_old, Real biot) const
 {
   return (biot - phi_old);
 }
 
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoPorosityTHM::computedPorositydpf(Real phi_old, Real biot, Real Ks) const
 {
   return (biot - phi_old) / Ks;
 }
 
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoPorosityTHM::computedPorositydT(Real phi_old, Real biot, Real beta_f, Real beta_s) const
 {

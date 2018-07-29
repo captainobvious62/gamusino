@@ -22,9 +22,10 @@ validParams<GamusinoMaterialMElastic>()
         "temperature",
         "The temperature variable.");
 
-  params.addParam<MooseEnum>("strain_model",
-                             GamusinoMaterialMElastic::strainModel() = "small_strain",
-                             "The strain model to be used.");
+  params.addParam<MooseEnum>(
+        "strain_model",
+        GamusinoMaterialMElastic::strainModel() = "small_strain",
+        "The strain model to be used.");
 
   params.addParam<bool>(
          "volumetric_locking_correction",
@@ -52,9 +53,9 @@ validParams<GamusinoMaterialMElastic>()
         "The youngs modulus [Pa].");
 
   params.addParam<std::vector<FunctionName>>(
-      "background_stress",
-      "A list of functions describing the background stress. If provided, "
-      "there must be 3 of these, corresponding to the xx, yy, zz components.");
+        "background_stress",
+        "A list of functions describing the background stress. If provided, "
+        "there must be 3 of these, corresponding to the xx, yy, zz components.");
 
   params.addParam<Real>(
         "solid_bulk_modulus",
@@ -68,12 +69,13 @@ validParams<GamusinoMaterialMElastic>()
   params.addParam<Real>(
         "closure_pressure",
         "The closure pressure for crack closure model [Pa].");
+
   // ***************************************************************************
   // GamusinoMaterialT
   params.addParam<bool>(
-      "has_heat_source_sink",
-      false,
-      "Has source/sink of temperature considered?");
+        "has_heat_source_sink",
+        false,
+        "Has source/sink of temperature considered?");
 
   params.addParam<Real>(
         "fluid_thermal_conductivity_initial",
@@ -118,13 +120,17 @@ validParams<GamusinoMaterialMElastic>()
       1.0e+99,
       "The fluid modulus [Pa].");
 
-  params.addRequiredParam<UserObjectName>("fluid_density_uo",
-                                          "The name of the fluid density user object");
+  params.addRequiredParam<UserObjectName>(
+      "fluid_density_uo",
+      "The name of the fluid density user object");
 
-  params.addParam<UserObjectName>("fluid_viscosity_uo",
-                                  "The name of the fluid viscosity user object");
+  params.addParam<UserObjectName>(
+      "fluid_viscosity_uo",
+      "The name of the fluid viscosity user object");
 
-  params.addParam<UserObjectName>("permeability_uo", "The name of the permeability user object");
+  params.addParam<UserObjectName>(
+      "permeability_uo",
+      "The name of the permeability user object");
 
   // ***************************************************************************
   // GamusinoMaterialTH
@@ -224,7 +230,7 @@ GamusinoMaterialMElastic::setPropertiesM()
   setElasticModuli();
   setBackgroundStress();
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::setStrainModel()
 {
@@ -256,7 +262,7 @@ GamusinoMaterialMElastic::setStrainModel()
     }
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::setElasticModuli()
 {
@@ -308,7 +314,7 @@ GamusinoMaterialMElastic::setElasticModuli()
     }
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::setBackgroundStress()
 {
@@ -324,7 +330,7 @@ GamusinoMaterialMElastic::setBackgroundStress()
   for (unsigned i = 0; i < num; ++i)
     _background_stress[i] = &getFunctionByName(fcn_names[i]);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::setPropertiesHM()
 {
@@ -380,7 +386,7 @@ GamusinoMaterialMElastic::setPropertiesHM()
   _dM_kernel_grav_dev = &declareProperty<RealVectorValue>("dM_kernel_grav_dev");
   _dM_kernel_grav_dpf = &declareProperty<RealVectorValue>("dM_kernel_grav_dpf");
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::setPropertiesTM()
 {
@@ -415,7 +421,7 @@ GamusinoMaterialMElastic::setPropertiesTM()
   // Properties derivatices
   _TM_jacobian = &declareProperty<RankTwoTensor>("TM_jacobian");
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::setPropertiesTHM()
 {
@@ -476,7 +482,7 @@ GamusinoMaterialMElastic::setPropertiesTHM()
     _nodal_pf_old = &declareProperty<Real>("nodal_pf_old");
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::initQpStatefulProperties()
 {
@@ -493,7 +499,7 @@ GamusinoMaterialMElastic::initQpStatefulProperties()
   }
   _porosity[_qp] = _phi0;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::computeProperties()
 {
@@ -501,7 +507,7 @@ GamusinoMaterialMElastic::computeProperties()
   for (_qp = 0; _qp < _qrule->n_points(); ++_qp)
     computeQpProperties();
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::computeStrain()
 {
@@ -574,7 +580,7 @@ GamusinoMaterialMElastic::computeStrain()
       break;
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::computeQpFiniteStrain()
 {
@@ -619,7 +625,7 @@ GamusinoMaterialMElastic::computeQpFiniteStrain()
   // _mechanical_strain[_qp] = (*_rotation_increment)[_qp] * _mechanical_strain[_qp] *
   // (*_rotation_increment)[_qp].transpose();
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::computeQpProperties()
 {
@@ -657,7 +663,7 @@ GamusinoMaterialMElastic::computeQpProperties()
   // Mechanical properties
   GamusinoKernelPropertiesM();
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoCrackClosure()
 {
@@ -674,7 +680,7 @@ GamusinoMaterialMElastic::GamusinoCrackClosure()
     _Cijkl[_qp].fillFromInputVector(iso_const, RankFourTensor::symmetric_isotropic);
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoMatPropertiesHM()
 {
@@ -702,7 +708,7 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesHM()
   (*_dk_dpf)[_qp] =
       _permeability_uo->computedPermeabilitydpf(_k0, _phi0, _porosity[_qp], (*_dphi_dpf)[_qp]);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesHM()
 {
@@ -716,7 +722,7 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesHM()
   (*_H_kernel_grav)[_qp] = -_fluid_density[_qp] * _gravity;
   (*_vol_strain_rate)[_qp] = (*_total_strain_increment)[_qp].trace() / _dt;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesHM()
 {
@@ -736,7 +742,7 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesHM()
   (*_dM_kernel_grav_dev)[_qp] = -(*_dphi_dev)[_qp] * (_fluid_density[_qp] - _rho0_s) * _gravity;
   (*_dM_kernel_grav_dpf)[_qp] = -(*_dphi_dpf)[_qp] * (_fluid_density[_qp] - _rho0_s) * _gravity;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoMatPropertiesTM()
 {
@@ -748,7 +754,7 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesTM()
   // Porosity
   _porosity[_qp] = _porosity_uo->computePorosity(_porosity_old[_qp], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesTM()
 {
@@ -759,7 +765,7 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesTM()
   if (_has_T_source_sink)
     (*_T_kernel_source)[_qp] = -1.0 * _T_source_sink;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesTM()
 {
@@ -769,7 +775,7 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesTM()
   (*_TM_jacobian)[_qp] = -bulk_thermal_expansion_coeff * _Cijkl[_qp] *
                          RankTwoTensor(RankTwoTensor::initIdentity) / 3.0;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoMatPropertiesTHM()
 {
@@ -826,7 +832,7 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesTHM()
   (*_dk_dT)[_qp] =
       _permeability_uo->computedPermeabilitydT(_k0, _phi0, _porosity[_qp], (*_dphi_dT)[_qp]);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesTHM()
 {
@@ -834,7 +840,7 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesTHM()
   GamusinoKernelPropertiesTM();
   (*_TH_kernel)[_qp] = -(*_H_kernel)[_qp] * _fluid_density[_qp] * _c_f;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesTHM()
 {
@@ -906,7 +912,7 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesTHM()
     (*_SUPG_dtau_dev)[_qp] = tau * dvel_dev;
   }
 }
-
+/* -------------------------------------------------------------------------- */
 unsigned
 GamusinoMaterialMElastic::nearest()
 {
@@ -923,7 +929,7 @@ GamusinoMaterialMElastic::nearest()
   }
   return n;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoMatPropertiesM()
 {
@@ -932,7 +938,7 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesM()
   // Porosity
   _porosity[_qp] = _porosity_uo->computePorosity(_porosity_old[_qp], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesM()
 {
@@ -941,7 +947,7 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesM()
   _M_kernel_grav[_qp] =
       -(_porosity[_qp] * _fluid_density[_qp] + (1.0 - _porosity[_qp]) * _rho0_s) * _gravity;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoSubstractEigenStrain()
 {
@@ -955,7 +961,7 @@ GamusinoMaterialMElastic::GamusinoSubstractEigenStrain()
                                 (*_rotation_increment)[_qp].transpose();
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::substractThermalEigenStrain(RankTwoTensor & strain_incr)
 {
@@ -968,7 +974,7 @@ GamusinoMaterialMElastic::substractThermalEigenStrain(RankTwoTensor & strain_inc
   }
   strain_incr -= thermal_es_incr;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMElastic::GamusinoStress()
 {

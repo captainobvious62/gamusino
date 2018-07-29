@@ -1,394 +1,286 @@
 [Mesh]
   type = FileMesh
   file = two_block.e
+  dim = 2
 []
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
-  PorousFlowDictator = 'dictator'
-[]
-
-[UserObjects]
-  [dictator]
-    type = PorousFlowDictator
-    porous_flow_vars = 'porepressure disp_x disp_y'
-    number_fluid_phases = 1
-    number_fluid_components = 1
-  []
-  [pc]
-    type = PorousFlowCapillaryPressureVG
-    m = 0.8
-    alpha = 1
-  []
+  pore_pressure = 'pore_pressure'
 []
 
 [Variables]
+  [pore_pressure]
+    order = FIRST
+    family = LAGRANGE
+  []
   [disp_x]
+    order = FIRST
+    family = LAGRANGE
   []
   [disp_y]
-  []
-  [porepressure]
-  []
-[]
-
-[BCs]
-  inactive = 'topdrained topload'
-  [confinex]
-    type = PresetBC
-    variable = disp_x
-    boundary = 'left right'
-    value = 0
-  []
-  [confiney]
-    type = PresetBC
-    variable = disp_y
-    boundary = 'bottom top'
-    value = 0
-  []
-  [basefixed]
-    type = PresetBC
-    variable = disp_z
-    boundary = 'back'
-    value = 0
-  []
-  [topdrained]
-    type = DirichletBC
-    variable = porepressure
-    boundary = 'front'
-    value = 0
-  []
-  [topload]
-    type = NeumannBC
-    variable = disp_z
-    boundary = 'front'
-    value = -1
+    order = FIRST
+    family = LAGRANGE
   []
 []
 
 [Kernels]
-  [grad_stress_x]
-    type = StressDivergenceTensors
+  [HKernel]
+    type = GamusinoKernelH
+    variable = pore_pressure
+  []
+  [MKernel_x]
+    type = GamusinoKernelM
     variable = disp_x
     component = 0
   []
-  [grad_stress_y]
-    type = StressDivergenceTensors
+  [MKernel_y]
+    type = GamusinoKernelM
     variable = disp_y
     component = 1
-  []
-  [poro_x]
-    type = PorousFlowEffectiveStressCoupling
-    biot_coefficient = 0.6
-    variable = disp_x
-    component = 0
-  []
-  [poro_y]
-    type = PorousFlowEffectiveStressCoupling
-    biot_coefficient = 0.6
-    variable = disp_y
-    component = 1
-  []
-  [poro_vol_exp]
-    type = PorousFlowMassVolumetricExpansion
-    variable = porepressure
-    fluid_component = 0
-  []
-  [mass0]
-    type = PorousFlowMassTimeDerivative
-    fluid_component = 0
-    variable = porepressure
-  []
-  [flux]
-    type = PorousFlowAdvectiveFlux
-    variable = porepressure
-    gravity = '0 0 0'
-    fluid_component = 0
   []
 []
 
-[Modules]
-  [FluidProperties]
-    [simple_fluid]
-      type = SimpleFluidProperties
-      bulk_modulus = 8
-      density0 = 1
-      thermal_expansion = 0
-      viscosity = 0.96
-    []
+[AuxVariables]
+  [strain_xx]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [strain_xy]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [strain_yy]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [stress_xx]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [stress_xy]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [stress_yy]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [porosity]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [fluid_viscosity]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [fluid_density]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+[]
+
+[AuxKernels]
+  [strain_xx]
+    type = GamusinoStrain
+    variable = strain_xx
+    index_i = 0
+    index_j = 0
+  []
+  [strain_xy]
+    type = GamusinoStrain
+    variable = strain_xy
+    index_i = 0
+    index_j = 1
+  []
+  [strain_yy]
+    type = GamusinoStrain
+    variable = strain_yy
+    index_i = 1
+    index_j = 1
+  []
+  [stress_xx]
+    type = GamusinoStress
+    variable = stress_xx
+    index_i = 0
+    index_j = 0
+  []
+  [stress_xy]
+    type = GamusinoStress
+    variable = stress_xy
+    index_i = 0
+    index_j = 1
+  []
+  [stress_yy]
+    type = GamusinoStress
+    variable = stress_yy
+    index_i = 1
+    index_j = 1
+  []
+  [porosity]
+    type = MaterialRealAux
+    variable = porosity
+    property = porosity
+  []
+  [fluid_viscosity]
+    type = MaterialRealAux
+    variable = fluid_viscosity
+    property = fluid_viscosity
+  []
+  [fluid_density]
+    type = MaterialRealAux
+    variable = fluid_density
+    property = fluid_density
+  []
+[]
+
+[BCs]
+  [roller_xmin]
+    type = DirichletBC
+    variable = disp_x
+    boundary = 'left'
+    value = 0.0 # m
+  []
+  [roller_xmax]
+    type = DirichletBC
+    variable = disp_x
+    boundary = 'right'
+    value = 0.0 # m
+  []
+  [roller_ymin]
+    type = DirichletBC
+    variable = disp_y
+    boundary = 'bottom'
+    value = 0.0 # m
+  []
+  [ymax_drained]
+    type = DirichletBC
+    variable = pore_pressure
+    boundary = 'top'
+    value = 0.0 # Pa
+  []
+  [noflow_xmin]
+    type = NeumannBC
+    variable = pore_pressure
+    boundary = 'left'
+    value = 0.0
+  []
+  [noflow_xmax]
+    type = NeumannBC
+    variable = pore_pressure
+    boundary = 'right'
+    value = 0.0
+  []
+  [noflow_ymin]
+    type = NeumannBC
+    variable = pore_pressure
+    boundary = 'bottom'
+    value = 0
   []
 []
 
 [Materials]
-  # Crust
-  [temperature_crust]
-    type = PorousFlowTemperature
-    block = 'crust'
-  []
-  [temperature_nodal_crust]
-    type = PorousFlowTemperature
-    at_nodes = true
-    block = 'crust'
-  []
-  [elasticity_tensor_crust]
-    # bulk modulus is lambda + 2*mu/3 = 2 + 2*3/3 = 4
-    type = ComputeElasticityTensor
-    C_ijkl = '2 3'
-    fill_method = symmetric_isotropic
-    block = 'crust'
-  []
-  [strain_crust]
-    type = ComputeSmallStrain
-    block = 'crust'
-  []
-  [stress_crust]
-    type = ComputeLinearElasticStress
-    block = 'crust'
-  []
-  [eff_fluid_pressure_crust]
-    type = PorousFlowEffectiveFluidPressure
-    at_nodes = true
-    block = 'crust'
-  []
-  [eff_fluid_pressure_qp_crust]
-    type = PorousFlowEffectiveFluidPressure
-    block = 'crust'
-  []
-  [vol_strain_crust]
-    type = PorousFlowVolumetricStrain
-    block = 'crust'
-  []
-  [ppss_crust]
-    type = PorousFlow1PhaseP
-    porepressure = 'porepressure'
-    capillary_pressure = pc
-    block = 'crust'
-  []
-  [ppss_nodal_crust]
-    type = PorousFlow1PhaseP
-    at_nodes = true
-    porepressure = 'porepressure'
-    capillary_pressure = pc
-    block = 'crust'
-  []
-  [massfrac_crust]
-    type = PorousFlowMassFraction
-    at_nodes = true
-    block = 'crust'
-  []
-  [simple_fluid_crust]
-    type = PorousFlowSingleComponentFluid
-    fp = simple_fluid
-    phase = 0
-    at_nodes = true
-    block = 'crust'
-  []
-  [simple_fluid_qp_crust]
-    type = PorousFlowSingleComponentFluid
-    fp = simple_fluid
-    phase = 0
-    block = 'crust'
-  []
-  [dens_all_crust]
-    type = PorousFlowJoiner
-    at_nodes = true
-    material_property = PorousFlow_fluid_phase_density_nodal
-    block = 'crust'
-  []
-  [dens_all_at_quadpoints_crust]
-    type = PorousFlowJoiner
-    material_property = PorousFlow_fluid_phase_density_qp
-    at_nodes = false
-    block = 'crust'
-  []
-  [visc_all_crust]
-    type = PorousFlowJoiner
-    at_nodes = true
-    material_property = PorousFlow_viscosity_nodal
-    block = 'crust'
-  []
-  [porosity_crust]
-    type = PorousFlowPorosity
-    fluid = true
-    mechanical = true
-    ensure_positive = false
-    at_nodes = true
-    porosity_zero = '0.1'
-    biot_coefficient = 0.6
-    solid_bulk = 4
-    block = 'crust'
-  []
-  [permeability_crust]
-    type = PorousFlowPermeabilityConst
-    permeability = '1.5 0 0   0 1.5 0   0 0 1.5'
-    block = 'crust'
-  []
-  [relperm_crust]
-    type = PorousFlowRelativePermeabilityCorey
-    at_nodes = true
-    n = 0 # unimportant in this fully-saturated situation
-    phase = 0
-    block = 'crust'
-  []
-  [relperm_all_crust]
-    type = PorousFlowJoiner
-    at_nodes = true
-    material_property = PorousFlow_relative_permeability_nodal
-    block = 'crust'
-  []
-
-  # Mantle
-  [temperature_mantle]
-    type = PorousFlowTemperature
+  [HMMaterial_Mantle]
+    type = GamusinoMaterialMElastic
     block = 'mantle'
+    strain_model = incr_small_strain
+    has_gravity = true
+    gravity_acceleration = 9.80 # m / s**2
+    solid_density_initial = 4000
+    fluid_density_initial = 1019.368
+    young_modulus = 10.0e+09
+    poisson_ratio = 0.25
+    permeability_initial = '1.0e-15'
+    fluid_viscosity_initial = 0.002 # Pa * s
+    porosity_uo = porosity
+    fluid_density_uo = fluid_density
+    fluid_viscosity_uo = fluid_viscosity
+    permeability_uo = permeability
+    porosity_initial = 0.08
   []
-  [temperature_nodal_mantle]
-    type = PorousFlowTemperature
-    at_nodes = true
-    block = 'mantle'
+  [HMMaterial_Crust]
+    type = GamusinoMaterialMElastic
+    gravity_acceleration = 9.80
+    fluid_viscosity_initial = 1.0e-03
+    has_gravity = true
+    fluid_viscosity_uo = fluid_viscosity
+    strain_model = incr_small_strain
+    fluid_density_initial = 1019.368
+    poisson_ratio = 0.25
+    porosity_uo = porosity
+    permeability_uo = permeability
+    permeability_initial = '1.0e-12'
+    young_modulus = 10.0e+09
+    fluid_density_uo = fluid_density
+    solid_density_initial = 3058.104
+    block = 'crust'
+    porosity_initial = 0.1
   []
-  [elasticity_tensor_mantle]
-    # bulk modulus is lambda + 2*mu/3 = 2 + 2*3/3 = 4
-    type = ComputeElasticityTensor
-    C_ijkl = '2 3'
-    fill_method = symmetric_isotropic
-    block = 'mantle'
-  []
-  [strain_mantle]
-    type = ComputeSmallStrain
-    block = 'mantle'
-  []
-  [stress_mantle]
-    type = ComputeLinearElasticStress
-    block = 'mantle'
-  []
-  [eff_fluid_pressure_mantle]
-    type = PorousFlowEffectiveFluidPressure
-    at_nodes = true
-    block = 'mantle'
-  []
-  [eff_fluid_pressure_qp_mantle]
-    type = PorousFlowEffectiveFluidPressure
-    block = 'mantle'
-  []
-  [vol_strain_mantle]
-    type = PorousFlowVolumetricStrain
-    block = 'mantle'
-  []
-  [ppss_mantle]
-    type = PorousFlow1PhaseP
-    porepressure = 'porepressure'
-    capillary_pressure = pc
-    block = 'mantle'
-  []
-  [ppss_nodal_mantle]
-    type = PorousFlow1PhaseP
-    at_nodes = true
-    porepressure = 'porepressure'
-    capillary_pressure = pc
-    block = 'mantle'
-  []
-  [massfrac_mantle]
-    type = PorousFlowMassFraction
-    at_nodes = true
-    block = 'mantle'
-  []
-  [simple_fluid_mantle]
-    type = PorousFlowSingleComponentFluid
-    fp = simple_fluid
-    phase = 0
-    at_nodes = true
-    block = 'mantle'
-  []
-  [simple_fluid_qp_mantle]
-    type = PorousFlowSingleComponentFluid
-    fp = simple_fluid
-    phase = 0
-    block = 'mantle'
-  []
-  [dens_all_mantle]
-    type = PorousFlowJoiner
-    at_nodes = true
-    material_property = PorousFlow_fluid_phase_density_nodal
-    block = 'mantle'
-  []
-  [dens_all_at_quadpoints_mantle]
-    type = PorousFlowJoiner
-    material_property = PorousFlow_fluid_phase_density_qp
-    at_nodes = false
-    block = 'mantle'
-  []
-  [visc_all_mantle]
-    type = PorousFlowJoiner
-    at_nodes = true
-    material_property = PorousFlow_viscosity_nodal
-    block = 'mantle'
-  []
-  [porosity_mantle]
-    type = PorousFlowPorosity
-    fluid = true
-    mechanical = true
-    ensure_positive = false
-    at_nodes = true
-    porosity_zero = '0.1'
-    biot_coefficient = 0.6
-    solid_bulk = 4
-    block = 'mantle'
-  []
-  [permeability_mantle]
-    type = PorousFlowPermeabilityConst
-    permeability = '1.5 0 0   0 1.5 0   0 0 1.5'
-    block = 'mantle'
-  []
-  [relperm_mantle]
-    type = PorousFlowRelativePermeabilityCorey
-    at_nodes = true
-    n = 0 # unimportant in this fully-saturated situation
-    phase = 0
-    block = 'mantle'
-  []
-  [relperm_all_mantle]
-    type = PorousFlowJoiner
-    at_nodes = true
-    material_property = PorousFlow_relative_permeability_nodal
-    block = 'mantle'
-  []
-
-
 []
 
-[Postprocessors]
-  [dt]
-    type = FunctionValuePostprocessor
-    outputs = 'console'
-    function = if(0.5*t<0.1,0.5*t,0.1)
+[UserObjects]
+  [porosity]
+    type = GamusinoPorosityTHM
+  []
+  [fluid_density]
+    type = GamusinoFluidDensityIAPWS
+  []
+  [fluid_viscosity]
+    type = GamusinoFluidViscosityIAPWS
+  []
+  [permeability]
+    type = GamusinoPermeabilityKC
+  []
+  [scaling]
+    type = GamusinoScaling
+    characteristic_length = 1.0
+    characteristic_stress = 1.0e+06
+    characteristic_time = 1.0
+    characteristic_temperature = 1.0
   []
 []
 
 [Preconditioning]
-  [andy]
+  inactive = 'precond mine'
+  [precond]
     type = SMP
     full = true
-    petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it'
-    petsc_options_value = 'bcgs bjacobi 1E-14 1E-10 10000'
+    petsc_options = '-snes_ksp_ew'
+    petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
+    petsc_options_value = 'gmres asm 1E-10 1E-10 200 500 lu NONZERO'
+  []
+  [hypre]
+    type = SMP
+    full = true
+    petsc_options = '-snes_ksp_ew -snes_view -ksp_converged_reason'
+    petsc_options_iname = '-pc_type -pc_hypre_type -snes_linesearch_type -ksp_gmres_restart -snes_atol -snes_rtol -snes_max_it'
+    petsc_options_value = 'hypre boomeramg cp 501 1E1 1E-06 1000'
+  []
+  [mine]
+    type = SMP
+    full = true
+    petsc_options = '-snes_ksp_ew -snes_monitor -snes_linesearch_monitor -snes_converged_reason -ksp_converged_reason -ksp_monitor_short'
+    petsc_options_iname = '-ksp_type
+                           -pc_type -sub_pc_type -sub_pc_factor_levels
+                           -ksp_rtol -ksp_max_it
+                           -snes_type -snes_linesearch_type
+                           -snes_atol -snes_max_it' # -snes_atol -snes_stol -snes_max_it'
+    petsc_options_value = 'fgmres asm ilu 1 1.0e-12 500 newtonls cp 1.0e-02 1000'
   []
 []
 
 [Executioner]
   type = Transient
-  solve_type = Newton
-  start_time = 0
-  end_time = 10
-  [TimeStepper]
-    type = PostprocessorDT
-    postprocessor = dt
-    dt = 0.0001
-  []
+  solve_type = NEWTON
+  start_time = 0.0
+  end_time = 50000
+  dt = 5000
+  petsc_options = '-dm_moose_print_embedding'
 []
 
 [Outputs]
   execute_on = 'timestep_end'
-  file_base = terzaghi
-  [csv]
-    type = CSV
-  []
+  print_linear_residuals = true
+  print_perf_log = true
+  exodus = true
 []
