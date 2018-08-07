@@ -43,7 +43,8 @@
 
 // DiracKernels
 #include "GamusinoDiracKernelTH.h"
-
+#include "GamusinoSeismicSource.h"
+#include "GamusinoFunctionPointForce.h"
 // BCs
 #include "PorePressureBC.h"
 #include "GamusinoConvectiveTHBC.h"
@@ -159,6 +160,8 @@ GamusinoApp::registerObjects(Factory & factory)
 
   // DiracKernels
   registerDiracKernel(GamusinoDiracKernelTH);
+  registerDiracKernel(GamusinoSeismicSource);
+  registerDiracKernel(GamusinoFunctionPointForce);
 
   // BCs
   registerBoundaryCondition(PorePressureBC);

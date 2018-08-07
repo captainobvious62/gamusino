@@ -1,6 +1,6 @@
 [Mesh]
   type = FileMesh
-  file = two_block.e
+  file = mesh.exo
   dim = 2
 []
 
