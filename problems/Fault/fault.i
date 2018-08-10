@@ -1,13 +1,8 @@
-#
-# Pressure Test
-#
-# This test is designed to apply a gravity body force.
-#
-# The mesh is composed of one block with a single element.
-# The bottom is fixed in all three directions.  Poisson's ratio
-# is zero and the density is 20/9.81
-# which makes it trivial to check displacements.
-#
+[GlobalParams]
+  block = '2'
+  displacements = 'disp_x disp_y'
+[]
+
 [Mesh]
   type = FileMesh
   file = 2D_60_F_MS.exo
@@ -25,8 +20,24 @@
   []
 []
 
+[AuxVariables]
+  [stress_xx]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [stress_yy]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [stress_xy]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+[]
+
 [Kernels]
   [TensorMechanics]
+    use_displaced_mesh = true
     displacements = 'disp_x disp_y'
   []
   [Gravity]
@@ -36,58 +47,50 @@
   []
 []
 
-[AuxVariables]
-  [stress_xx]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  [stress_xy]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  [stress_yy]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-[]
 [AuxKernels]
-  [./stress_xx]
+  [stress_xx]
     type = RankTwoAux
     rank_two_tensor = stress
     variable = stress_xx
     index_i = 0
     index_j = 0
-    execute_on = timestep_end
-  [../]
-  [./stress_yy]
+    execute_on = 'timestep_end'
+  []
+  [stress_yy]
     type = RankTwoAux
     rank_two_tensor = stress
     variable = stress_yy
     index_i = 1
     index_j = 1
-    execute_on = timestep_end
-  [../]
-  [./stress_xy]
+    execute_on = 'timestep_end'
+  []
+  [stress_xy]
     type = RankTwoAux
     rank_two_tensor = stress
     variable = stress_xy
     index_i = 0
     index_j = 1
-    execute_on = timestep_end
-  [../]
+    execute_on = 'timestep_end'
+  []
 []
 
 [BCs]
-  [no_x]
+  [roller_xmin]
     type = DirichletBC
     variable = disp_x
-    boundary = 'bottom'
+    boundary = 'left'
     value = 0.0
   []
-  [no_y]
+  [roller_ymin]
     type = DirichletBC
     variable = disp_y
     boundary = 'bottom'
+    value = 0.0
+  []
+  [roller_xmax]
+    type = DirichletBC
+    variable = disp_x
+    boundary = 'right'
     value = 0.0
   []
 []
@@ -146,28 +149,25 @@
 []
 
 [Executioner]
-  type = Steady
+  type = Transient
   solve_type = PJFNK
-  nl_abs_tol = 1e-10
-  l_max_its = 20
+  start_time = 0.0
+  end_time = 50000
+  dt = 5000
+  petsc_options = '-dm_moose_print_embedding'
 []
 
 [Outputs]
-  [out]
-    type = Exodus
-    elemental_as_nodal = true
-  []
+  exodus = true
+  print_perf_log = true
 []
 
 [Contact]
-  [./fault]
+  [frictional_fault]
     slave = fault_slave
+    disp_y = disp_y
+    disp_x = disp_x
+    displacements = 'disp_x disp_y'
     master = fault_master
-    system = constraint
-    model = coulomb
-    formulation = penalty
-    normalize_penalty = true
-    friction_coefficient = 0.8
-    penalty = 1e+9
-  [../]
+  []
 []
