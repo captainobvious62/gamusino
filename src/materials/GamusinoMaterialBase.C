@@ -65,26 +65,38 @@ Routine: GamusinoMaterialBase -- constructor
 
 GamusinoMaterialBase::GamusinoMaterialBase(const InputParameters & parameters)
   : Material(parameters),
+  _material_type(getParam<MooseEnum>("material_type")),
 
+  // ========================================================
+  // flags to indicate the involvement of terms and equations
+  // ========================================================
     _has_gravity(getParam<bool>("has_gravity")),
     _has_scaled_properties(isParamValid("scaling_uo")),
 
+  // =====================
+  // user-input parameters
+  // =====================
     _rho0_f(getParam<Real>("fluid_density_initial")),
     _rho0_s(getParam<Real>("solid_density_initial")),
     _phi0(getParam<Real>("porosity_initial")),
     _g(getParam<Real>("gravity_acceleration")),
-    _scaling_factor0(getParam<Real>("scaling_factor_initial")),
-    _function_scaling(isParamValid("function_scaling") ? &getFunction("function_scaling") : NULL),
     _alpha_T_f(getParam<Real>("fluid_thermal_expansion")),
     _alpha_T_s(getParam<Real>("solid_thermal_expansion")),
+    _scaling_factor0(getParam<Real>("scaling_factor_initial")),
 
+  // =====================
+  // user objects
+  // =====================
+    _function_scaling(isParamValid("function_scaling") ? &getFunction("function_scaling") : NULL),
+    _scaling_uo(_has_scaled_properties ? &getUserObject<GamusinoScaling>("scaling_uo") : NULL),
     _fluid_density_uo(NULL),
     _fluid_viscosity_uo(NULL),
     _permeability_uo(NULL),
     _porosity_uo(&getUserObject<GamusinoPorosity>("porosity_uo")),
-    _scaling_uo(_has_scaled_properties ? &getUserObject<GamusinoScaling>("scaling_uo") : NULL),
 
-    _material_type(getParam<MooseEnum>("material_type")),
+  // ===================
+  // material properties
+  // ===================
     _scaling_factor(declareProperty<Real>("scaling_factor")),
     _porosity(declareProperty<Real>("porosity")),
     _fluid_density(declareProperty<Real>("fluid_density")),
@@ -99,15 +111,25 @@ GamusinoMaterialBase::GamusinoMaterialBase(const InputParameters & parameters)
     _alpha_T_f /= _scaling_uo->_s_expansivity;
     _scaling_factor0 /= _scaling_uo->_s_length;
   }
+
+// ===================
+// body forces
+// ===================
   computeGravity();
 }
 
+/*******************************************************************************
+Routine: initQpStatefulProperties -- called only when stateful props are used
+*******************************************************************************/
 void
 GamusinoMaterialBase::initQpStatefulProperties()
 {
   _porosity[_qp] = _phi0;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: computeQpScaling -- self-explanatory
+*******************************************************************************/
 Real
 GamusinoMaterialBase::computeQpScaling()
 {
@@ -131,6 +153,9 @@ GamusinoMaterialBase::computeQpScaling()
   return scaling_factor;
 }
 
+/*******************************************************************************
+Routine: computeGravity -- self-explanatory
+*******************************************************************************/
 void
 GamusinoMaterialBase::computeGravity()
 {
@@ -147,6 +172,9 @@ GamusinoMaterialBase::computeGravity()
     _gravity = RealVectorValue(0., 0., 0.);
 }
 
+/*******************************************************************************
+Routine: computeRotationMatrix -- self-explanatory
+*******************************************************************************/
 void
 GamusinoMaterialBase::computeRotationMatrix()
 {
