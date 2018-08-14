@@ -26,7 +26,7 @@ validParams<GamusinoMaterialMInelastic>()
                              "general consistent tangentoperator.");
   return params;
 }
-
+/* -------------------------------------------------------------------------- */
 GamusinoMaterialMInelastic::GamusinoMaterialMInelastic(const InputParameters & parameters)
   : GamusinoMaterialMElastic(parameters),
     _max_its(getParam<unsigned int>("max_iterations")),
@@ -51,14 +51,14 @@ GamusinoMaterialMInelastic::GamusinoMaterialMInelastic(const InputParameters & p
                  " is not compatible with the class.");
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMInelastic::initQpStatefulProperties()
 {
   GamusinoMaterialMElastic::initQpStatefulProperties();
   _inelastic_strain[_qp].zero();
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMInelastic::GamusinoStress()
 {
@@ -93,7 +93,7 @@ GamusinoMaterialMInelastic::GamusinoStress()
         (_inelastic_strain[_qp].trace() - _inelastic_strain_old[_qp].trace()) / _dt;
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMInelastic::updateQpStress(RankTwoTensor & combined_inelastic_strain_increment)
 {
@@ -166,7 +166,7 @@ GamusinoMaterialMInelastic::updateQpStress(RankTwoTensor & combined_inelastic_st
 
   computeQpJacobian(consistent_tangent_operator);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMInelastic::updateQpStressSingleModel(
     RankTwoTensor & combined_inelastic_strain_increment)
@@ -179,7 +179,7 @@ GamusinoMaterialMInelastic::updateQpStressSingleModel(
   computeAdmissibleState(
       0, elastic_strain_increment, combined_inelastic_strain_increment, _M_jacobian[_qp]);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMInelastic::computeAdmissibleState(unsigned model_number,
                                                 RankTwoTensor & elastic_strain_increment,
@@ -194,7 +194,7 @@ GamusinoMaterialMInelastic::computeAdmissibleState(unsigned model_number,
                                       _tangent_operator_type == TangentOperatorEnum::nonlinear,
                                       consistent_tangent_operator);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialMInelastic::computeQpJacobian(
     const std::vector<RankFourTensor> & consistent_tangent_operator)

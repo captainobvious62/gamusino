@@ -7,14 +7,14 @@ validParams<GMSMassResidual>()
   InputParameters params = validParams<Kernel>();
   return params;
 }
-
+/* -------------------------------------------------------------------------- */
 GMSMassResidual::GMSMassResidual(const InputParameters & parameters)
   : Kernel(parameters),
     _bulk_density(getMaterialProperty<Real>("bulk_density")),
     _gravity(getMaterialProperty<RealVectorValue>("gravity"))
 {
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GMSMassResidual::computeQpResidual()
 {

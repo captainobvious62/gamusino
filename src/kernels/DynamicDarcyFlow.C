@@ -15,7 +15,7 @@ InputParameters validParams<DynamicDarcyFlow>()
   params.addRequiredParam<Real>("gamma","gamma parameter");
   return params;
 }
-
+/* -------------------------------------------------------------------------- */
 DynamicDarcyFlow::DynamicDarcyFlow(const InputParameters & parameters)
   :Kernel(parameters),
    _rhof(getMaterialProperty<Real>("rhof")),
@@ -32,7 +32,7 @@ DynamicDarcyFlow::DynamicDarcyFlow(const InputParameters & parameters)
    _beta(getParam<Real>("beta")),
    _gamma(getParam<Real>("gamma"))
  {}
-
+/* -------------------------------------------------------------------------- */
  Real
  DynamicDarcyFlow::computeQpResidual()
  {
@@ -42,7 +42,7 @@ DynamicDarcyFlow::DynamicDarcyFlow(const InputParameters & parameters)
    Real af = 1/_gamma*((_u[_qp] - _u_old[_qp])/_dt - (1.0 - _gamma)*_af_old[_qp]);
    return _test[_i][_qp]*_rhof[_qp]*( as + af/_nf[_qp] + _gravity/_K[_qp]*_u[_qp] );
  }
-
+/* -------------------------------------------------------------------------- */
  Real
  DynamicDarcyFlow::computeQpJacobian()
  {
@@ -50,7 +50,7 @@ DynamicDarcyFlow::DynamicDarcyFlow(const InputParameters & parameters)
     return 0.0;
    return _test[_i][_qp]*_rhof[_qp]*(1.0/(_nf[_qp]*_gamma*_dt) + _gravity/_K[_qp])*_phi[_j][_qp];
  }
-
+/* -------------------------------------------------------------------------- */
 Real
 DynamicDarcyFlow::computeQpOffDiagJacobian(unsigned int jvar)
 {

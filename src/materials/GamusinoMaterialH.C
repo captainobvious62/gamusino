@@ -40,7 +40,7 @@ validParams<GamusinoMaterialH>()
 
   return params;
 }
-
+/* -------------------------------------------------------------------------- */
 GamusinoMaterialH::GamusinoMaterialH(const InputParameters & parameters)
   : GamusinoMaterialBase(parameters),
     _has_disp(isCoupled("displacements")),
@@ -78,13 +78,13 @@ GamusinoMaterialH::GamusinoMaterialH(const InputParameters & parameters)
     }
   }
 }
-
+/* -------------------------------------------------------------------------- */
 MooseEnum
 GamusinoMaterialH::permeabilityType()
 {
   return MooseEnum("isotropic=1 orthotropic=2 anisotropic=3");
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialH::computeProperties()
 {
@@ -93,7 +93,7 @@ GamusinoMaterialH::computeProperties()
   for (_qp = 0; _qp < _qrule->n_points(); ++_qp)
     computeQpProperties();
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialH::computeQpProperties()
 {
@@ -116,7 +116,7 @@ GamusinoMaterialH::computeQpProperties()
     }
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialH::GamusinoPropertiesH()
 {

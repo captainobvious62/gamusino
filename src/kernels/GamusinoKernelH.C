@@ -12,6 +12,9 @@ validParams<GamusinoKernelH>()
   return params;
 }
 
+/*******************************************************************************
+Routine: GamusinoKernelH -- Constructor
+*******************************************************************************/
 GamusinoKernelH::GamusinoKernelH(const InputParameters & parameters)
   : DerivativeMaterialInterface<Kernel>(parameters),
     _has_T(isCoupled("temperature")),
@@ -49,6 +52,8 @@ GamusinoKernelH::computeQpResidual()
 {
   RealVectorValue vel = _H_kernel[_qp] * (_grad_u[_qp] + _H_kernel_grav[_qp]);
 
+  // ===========================================================================
+  // Boussinesq
   Real boussinesq = 0.0;
   if (_has_boussinesq)
     boussinesq += (vel / (*_fluid_density)[_qp]) *
@@ -75,6 +80,8 @@ GamusinoKernelH::computeQpJacobian()
   //     _scaling_factor[_qp] * ((coeff_1 + coeff_2) * _phi[_j][_qp] + coeff_3) *
   //     _grad_test[_i][_qp];
 
+  // ===========================================================================
+  // Boussinesq
   if (_has_boussinesq)
   {
     RealVectorValue vel = _H_kernel[_qp] * (_grad_u[_qp] + _H_kernel_grav[_qp]);

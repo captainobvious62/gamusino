@@ -10,12 +10,12 @@ validParams<GamusinoPermeabilityKC>()
   params.addClassDescription("Kozeny-Carman Permeability formulation");
   return params;
 }
-
+/* -------------------------------------------------------------------------- */
 GamusinoPermeabilityKC::GamusinoPermeabilityKC(const InputParameters & parameters)
   : GamusinoPermeability(parameters)
 {
 }
-
+/* -------------------------------------------------------------------------- */
 std::vector<Real>
 GamusinoPermeabilityKC::computePermeability(std::vector<Real> k0, Real phi0, Real porosity, Real) const
 {
@@ -37,7 +37,7 @@ GamusinoPermeabilityKC::computePermeability(std::vector<Real> k0, Real phi0, Rea
 
   return k;
 }
-
+/* -------------------------------------------------------------------------- */
 std::vector<Real>
 GamusinoPermeabilityKC::computedPermeabilitydev(std::vector<Real> k0,
                                              Real phi0,
@@ -54,7 +54,7 @@ GamusinoPermeabilityKC::computedPermeabilitydev(std::vector<Real> k0,
         Utility::pow<2>(porosity) * (3.0 - porosity) / Utility::pow<3>(1.0 - porosity) * dphi_dev;
   return dk_dev;
 }
-
+/* -------------------------------------------------------------------------- */
 std::vector<Real>
 GamusinoPermeabilityKC::computedPermeabilitydpf(std::vector<Real> k0,
                                              Real phi0,
@@ -76,7 +76,7 @@ GamusinoPermeabilityKC::computedPermeabilitydpf(std::vector<Real> k0,
 
   return dk_dpf;
 }
-
+/* -------------------------------------------------------------------------- */
 std::vector<Real>
 GamusinoPermeabilityKC::computedPermeabilitydT(std::vector<Real> k0,
                                             Real phi0,

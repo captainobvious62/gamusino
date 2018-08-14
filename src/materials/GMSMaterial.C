@@ -84,7 +84,7 @@ GMSMaterial::GMSMaterial(const InputParameters & parameters)
     _h_prod = (_is_temp_coupled ? getParam<Real>("heat_production") : 0.);
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GMSMaterial::computeQpProperties()
 {
@@ -127,7 +127,7 @@ GMSMaterial::computeQpProperties()
   else
     _gravity[_qp] = RealVectorValue(-9.81, 0., 0.);
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GMSMaterial::computeEOSlambda(Real temperature, Real pressure)
 {

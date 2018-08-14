@@ -145,9 +145,24 @@ validParams<GamusinoMaterialMElastic>()
 
   return params;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: GamusinoMaterialMElastic -- constructor
+*******************************************************************************/
+
 GamusinoMaterialMElastic::GamusinoMaterialMElastic(const InputParameters & parameters)
   : GamusinoMaterialBase(parameters),
+
+  // ========================================================
+  // flags to indicate the involvement of terms and equations
+  // ========================================================
+    _has_pf(isCoupled("pore_pressure")),
+    _has_T(isCoupled("temperature")),
+
+  // =====================
+  // user-input parameters
+  // =====================
+
     _ndisp(coupledComponents("displacements")),
     _disp(3),
     _grad_disp(3),
@@ -166,9 +181,9 @@ GamusinoMaterialMElastic::GamusinoMaterialMElastic(const InputParameters & param
     _M_kernel_grav(declareProperty<RealVectorValue>("M_kernel_grav")),
     _porosity_old(getMaterialPropertyOld<Real>("porosity")),
     _crack_closure_set(isParamValid("end_bulk_modulus") && isParamValid("closure_pressure")),
-    _has_pf(isCoupled("pore_pressure")),
+
     _permeability_type(getParam<MooseEnum>("permeability_type")),
-    _has_T(isCoupled("temperature")),
+
     _has_T_source_sink(getParam<bool>("has_heat_source_sink"))
 {
   if (_ndisp != _mesh.dimension())
@@ -197,13 +212,13 @@ GamusinoMaterialMElastic::GamusinoMaterialMElastic(const InputParameters & param
   if (_has_pf && _has_T)
     setPropertiesTHM();
 }
-
+/* -------------------------------------------------------------------------- */
 MooseEnum
 GamusinoMaterialMElastic::strainModel()
 {
   return MooseEnum("small_strain=1 incr_small_strain=2 finite_strain=3");
 }
-
+/* -------------------------------------------------------------------------- */
 MooseEnum
 GamusinoMaterialMElastic::permeabilityType()
 {

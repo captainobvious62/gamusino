@@ -63,7 +63,7 @@ validParams<GamusinoMaterialTH>()
 
   params.addRequiredParam<UserObjectName>("fluid_viscosity_uo",
                                           "The name of the fluid viscosity user object.");
-                                          
+
   params.addClassDescription("This is the base class for Thermo-Hydraulic (TH) Gamusino material "
                              "properties. It inherits from GamusinoMaterialH all related hydraulic "
                              "properties.");
@@ -159,7 +159,7 @@ GamusinoMaterialTH::GamusinoMaterialTH(const InputParameters & parameters)
   else
     _dH_kernel_dpf = &declareProperty<RankTwoTensor>("dH_kernel_dpf");
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialTH::computeProperties()
 {
@@ -168,7 +168,7 @@ GamusinoMaterialTH::computeProperties()
   for (_qp = 0; _qp < _qrule->n_points(); ++_qp)
     computeQpProperties();
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialTH::computeQpProperties()
 {
@@ -239,7 +239,7 @@ GamusinoMaterialTH::computeQpProperties()
     }
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialTH::computeDensity()
 {
@@ -259,7 +259,7 @@ GamusinoMaterialTH::computeDensity()
   _drho_dT[_qp] = _fluid_density_uo->computedDensitydT(pres, temp, _rho0_f);
   _drho_dpf[_qp] = _fluid_density_uo->computedDensitydp(pres, temp);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialTH::computeViscosity()
 {
@@ -274,7 +274,7 @@ GamusinoMaterialTH::computeViscosity()
   _dmu_dpf[_qp] =
       _fluid_viscosity_uo->computedViscositydp(temp, _fluid_density[_qp], _drho_dpf[_qp]);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialTH::computeQpSUPG()
 {
@@ -293,7 +293,7 @@ GamusinoMaterialTH::computeQpSUPG()
   if (_has_disp)
     (*_SUPG_dtau_dev)[_qp] = 0.0;
 }
-
+/* -------------------------------------------------------------------------- */
 unsigned
 GamusinoMaterialTH::nearest()
 {

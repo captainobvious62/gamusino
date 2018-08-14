@@ -1,3 +1,4 @@
+inactive = 'Contact'
 [GlobalParams]
   block = '2'
   displacements = 'disp_x disp_y'
@@ -32,6 +33,42 @@
   [stress_xy]
     order = CONSTANT
     family = MONOMIAL
+  []
+  [elastic_energy]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [von_mises]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [hydrostatic]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [first_inv]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [second_inv]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [third_inv]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [max_principal]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [min_principal]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [direction]
+    family = MONOMIAL
+    order = CONSTANT
   []
 []
 
@@ -72,6 +109,58 @@
     index_j = 1
     execute_on = 'timestep_end'
   []
+  [elastic_energy]
+    type = ElasticEnergyAux
+    variable = elastic_energy
+  []
+  [von_mises]
+    type = RankTwoScalarAux
+    scalar_type = VonMisesStress
+    rank_two_tensor = stress
+    variable = von_mises
+  []
+  [hydrostatic]
+    type = RankTwoScalarAux
+    scalar_type = Hydrostatic
+    rank_two_tensor = stress
+    variable = hydrostatic
+  []
+  [fi]
+    type = RankTwoScalarAux
+    scalar_type = FirstInvariant
+    rank_two_tensor = stress
+    variable = first_inv
+  []
+  [si]
+    type = RankTwoScalarAux
+    scalar_type = SecondInvariant
+    rank_two_tensor = stress
+    variable = second_inv
+  []
+  [ti]
+    type = RankTwoScalarAux
+    scalar_type = ThirdInvariant
+    rank_two_tensor = stress
+    variable = third_inv
+  []
+  [maxprincipal]
+    type = RankTwoScalarAux
+    scalar_type = MaxPrincipal
+    rank_two_tensor = stress
+    variable = max_principal
+  []
+  [minprincipal]
+    type = RankTwoScalarAux
+    scalar_type = MinPrincipal
+    rank_two_tensor = stress
+    variable = min_principal
+  []
+  [direction]
+    type = RankTwoScalarAux
+    scalar_type = Direction
+    rank_two_tensor = stress
+    variable = direction
+  []
 []
 
 [BCs]
@@ -92,6 +181,18 @@
     variable = disp_x
     boundary = 'right'
     value = 0.0
+  []
+  [fault_traction_master_x]
+    type = NeumannBC
+    variable = disp_x
+    boundary = 'fault_master'
+    value = 5
+  []
+  [fault_traction_master_y]
+    type = NeumannBC
+    variable = disp_y
+    boundary = 'fault_master'
+    value = 5
   []
 []
 

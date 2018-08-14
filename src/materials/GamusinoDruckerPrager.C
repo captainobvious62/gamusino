@@ -46,20 +46,20 @@ GamusinoDruckerPrager::GamusinoDruckerPrager(const InputParameters & parameters)
   initializeAB(0.0, _k, _alpha);
   initializeB(0.0, dilation, _beta);
 }
-
+/* -------------------------------------------------------------------------- */
 MooseEnum
 GamusinoDruckerPrager::MC_interpolation_scheme()
 {
   return MooseEnum("DP1=1 DP2=2 DP3=3 DP4=4 DP5=5");
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoDruckerPrager::computePQStress(const RankTwoTensor & stress, Real & p, Real & q) const
 {
   p = stress.trace();
   q = std::sqrt(stress.secondInvariant());
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoDruckerPrager::setEffectiveElasticity(const RankFourTensor & Eijkl,
                                            Real & Epp,
@@ -68,19 +68,19 @@ GamusinoDruckerPrager::setEffectiveElasticity(const RankFourTensor & Eijkl,
   Epp = Eijkl.sum3x3();
   Eqq = Eijkl(0, 1, 0, 1);
 }
-
+/* -------------------------------------------------------------------------- */
 RankTwoTensor
 GamusinoDruckerPrager::dpdstress(const RankTwoTensor & stress) const
 {
   return stress.dtrace();
 }
-
+/* -------------------------------------------------------------------------- */
 RankFourTensor
 GamusinoDruckerPrager::d2pdstress2(const RankTwoTensor & /*stress*/) const
 {
   return RankFourTensor();
 }
-
+/* -------------------------------------------------------------------------- */
 RankTwoTensor
 GamusinoDruckerPrager::dqdstress(const RankTwoTensor & stress) const
 {
@@ -89,7 +89,7 @@ GamusinoDruckerPrager::dqdstress(const RankTwoTensor & stress) const
     return RankTwoTensor();
   return 0.5 * stress.dsecondInvariant() / std::sqrt(j2);
 }
-
+/* -------------------------------------------------------------------------- */
 RankFourTensor
 GamusinoDruckerPrager::d2qdstress2(const RankTwoTensor & stress) const
 {
@@ -101,7 +101,7 @@ GamusinoDruckerPrager::d2qdstress2(const RankTwoTensor & stress) const
   return -0.25 * dj2.outerProduct(dj2) / std::pow(j2, 1.5) +
          0.5 * stress.d2secondInvariant() / std::sqrt(j2);
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoDruckerPrager::yieldFunctionValue(Real p, Real q, const Real & intnl) const
 {
@@ -110,7 +110,7 @@ GamusinoDruckerPrager::yieldFunctionValue(Real p, Real q, const Real & intnl) co
   bothAB(intnl, k, alpha);
   return std::sqrt(Utility::pow<2>(q) + _smoother2) + p * alpha - k;
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoDruckerPrager::dyieldFunction_dp(Real /*p*/, Real /*q*/, const Real & intnl) const
 {
@@ -119,7 +119,7 @@ GamusinoDruckerPrager::dyieldFunction_dp(Real /*p*/, Real /*q*/, const Real & in
   bothAB(intnl, k, alpha);
   return alpha;
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoDruckerPrager::dyieldFunction_dq(Real /*p*/, Real q, const Real & /*intnl*/) const
 {
@@ -128,7 +128,7 @@ GamusinoDruckerPrager::dyieldFunction_dq(Real /*p*/, Real q, const Real & /*intn
   else
     return q / std::sqrt(Utility::pow<2>(q) + _smoother2);
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoDruckerPrager::dyieldFunction_dintnl(Real p, Real /*q*/, const Real & intnl) const
 {
@@ -137,7 +137,7 @@ GamusinoDruckerPrager::dyieldFunction_dintnl(Real p, Real /*q*/, const Real & in
   dbothAB(intnl, dk, dalpha);
   return p * dalpha - dk;
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoDruckerPrager::dflowPotential_dp(Real /*p*/, Real /*q*/, const Real & intnl) const
 {
@@ -145,25 +145,25 @@ GamusinoDruckerPrager::dflowPotential_dp(Real /*p*/, Real /*q*/, const Real & in
   onlyB(intnl, dilation, beta);
   return beta;
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoDruckerPrager::dflowPotential_dq(Real p, Real q, const Real & intnl) const
 {
   return dyieldFunction_dq(p, q, intnl);
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoDruckerPrager::d2flowPotential_dp2(Real /*p*/, Real /*q*/, const Real & /*intnl*/) const
 {
   return 0.0;
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoDruckerPrager::d2flowPotential_dp_dq(Real /*p*/, Real /*q*/, const Real & /*intnl*/) const
 {
   return 0.0;
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoDruckerPrager::d2flowPotential_dq2(Real /*p*/, Real q, const Real & /*intnl*/) const
 {
@@ -173,7 +173,7 @@ GamusinoDruckerPrager::d2flowPotential_dq2(Real /*p*/, Real q, const Real & /*in
   else
     return (1.0 - Utility::pow<2>(q) / (Utility::pow<2>(q) + _smoother2)) / sqrt_q;
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoDruckerPrager::d2flowPotential_dp_dintnl(Real /*p*/, Real /*q*/, const Real & intnl) const
 {
@@ -181,20 +181,20 @@ GamusinoDruckerPrager::d2flowPotential_dp_dintnl(Real /*p*/, Real /*q*/, const R
   donlyB(intnl, dilation, dbeta);
   return dbeta;
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoDruckerPrager::d2flowPotential_dq_dintnl(Real /*p*/, Real /*q*/, const Real & /*intnl*/) const
 {
   return 0.0;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoDruckerPrager::setIntnlValues(
     Real /*p_trial*/, Real q_trial, Real /*p*/, Real q, const Real & intnl_old, Real & intnl) const
 {
   intnl = intnl_old + (q_trial - q) / _Eqq;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoDruckerPrager::setIntnlDerivatives(Real /*p_trial*/,
                                         Real /*q_trial*/,
@@ -206,7 +206,7 @@ GamusinoDruckerPrager::setIntnlDerivatives(Real /*p_trial*/,
   dintnl[0] = 0.0;
   dintnl[1] = -1.0 / _Eqq;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoDruckerPrager::bothAB(Real intnl, Real & k, Real & alpha) const
 {
@@ -218,7 +218,7 @@ GamusinoDruckerPrager::bothAB(Real intnl, Real & k, Real & alpha) const
   }
   initializeAB(intnl, k, alpha);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoDruckerPrager::onlyB(Real intnl, int f_or_d, Real & alpha_beta) const
 {
@@ -234,7 +234,7 @@ GamusinoDruckerPrager::onlyB(Real intnl, int f_or_d, Real & alpha_beta) const
   }
   initializeB(intnl, f_or_d, alpha_beta);
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoDruckerPrager::initializeAB(Real intnl, Real & k, Real & alpha) const
 {
@@ -265,7 +265,7 @@ GamusinoDruckerPrager::initializeAB(Real intnl, Real & k, Real & alpha) const
       break;
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoDruckerPrager::initializeB(Real intnl, int f_or_d, Real & alpha_beta) const
 {
@@ -292,7 +292,7 @@ GamusinoDruckerPrager::initializeB(Real intnl, int f_or_d, Real & alpha_beta) co
       break;
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoDruckerPrager::dbothAB(Real intnl, Real & dk, Real & dalpha) const
 {
@@ -340,7 +340,7 @@ GamusinoDruckerPrager::dbothAB(Real intnl, Real & dk, Real & dalpha) const
       break;
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoDruckerPrager::donlyB(Real intnl, int f_or_d, Real & dalpha_beta) const
 {

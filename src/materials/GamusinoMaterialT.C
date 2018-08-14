@@ -49,7 +49,7 @@ GamusinoMaterialT::GamusinoMaterialT(const InputParameters & parameters)
     _T_kernel_time = &declareProperty<Real>("T_kernel_time");
   }
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoMaterialT::computeQpProperties()
 {

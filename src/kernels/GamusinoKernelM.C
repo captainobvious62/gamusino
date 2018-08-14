@@ -30,6 +30,9 @@ validParams<GamusinoKernelM>()
   return params;
 }
 
+/*******************************************************************************
+Routine: GamusinoKernelM -- Constructor
+*******************************************************************************/
 GamusinoKernelM::GamusinoKernelM(const InputParameters & parameters)
   : DerivativeMaterialInterface<Kernel>(parameters),
     _has_pf(isCoupled("pore_pressure")),
@@ -90,21 +93,23 @@ GamusinoKernelM::computeJacobian()
   }
   Kernel::computeJacobian();
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoKernelM::computeQpJacobian()
 {
   Real jac = 0.0;
-  if (_use_finite_deform_jacobian)
+  if (_use_finite_deform_jacobian) {
     jac += GamusinoM::elasticJacobian(_finite_deform_jacobian[_qp],
                                    _component,
                                    _component,
                                    _grad_test[_i][_qp],
                                    (*_grad_phi_undisplaced)[_j][_qp]);
-  else
-    jac += GamusinoM::elasticJacobian(
-        _M_jacobian[_qp], _component, _component, _grad_test[_i][_qp], _grad_phi[_j][_qp]);
+  }
+  else {
+    jac += GamusinoM::elasticJacobian(_M_jacobian[_qp], _component, _component,
+                                      _grad_test[_i][_qp], _grad_phi[_j][_qp]);
 
+  }
   jac += _dM_kernel_grav_dev[_qp](_component) * _grad_phi[_j][_qp](_component) * _test[_i][_qp];
 
   return jac;
@@ -126,7 +131,7 @@ GamusinoKernelM::computeOffDiagJacobian(MooseVariableFEBase & jvar)
   }
   Kernel::computeOffDiagJacobian(jvar);
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoKernelM::computeQpOffDiagJacobian(unsigned int jvar)
 {
@@ -142,16 +147,18 @@ GamusinoKernelM::computeQpOffDiagJacobian(unsigned int jvar)
   if (active)
   {
     Real jac = 0.0;
-    if (_use_finite_deform_jacobian)
+    if (_use_finite_deform_jacobian) {
       jac += GamusinoM::elasticJacobian(_finite_deform_jacobian[_qp],
                                      _component,
                                      coupled_component,
                                      _grad_test[_i][_qp],
                                      (*_grad_phi_undisplaced)[_j][_qp]);
+    }
     else
+    {
       jac += GamusinoM::elasticJacobian(
           _M_jacobian[_qp], _component, coupled_component, _grad_test[_i][_qp], _grad_phi[_j][_qp]);
-
+    }
     jac += _dM_kernel_grav_dev[_qp](_component) * _grad_phi[_j][_qp](coupled_component) *
            _test[_i][_qp];
     return jac;
@@ -174,7 +181,7 @@ GamusinoKernelM::computeQpOffDiagJacobian(unsigned int jvar)
 
   return 0.0;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoKernelM::computeFiniteDeformJacobian()
 {

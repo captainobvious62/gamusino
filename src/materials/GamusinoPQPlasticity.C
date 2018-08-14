@@ -9,7 +9,7 @@ validParams<GamusinoPQPlasticity>()
   InputParameters params = validParams<GamusinoInelasticBase>();
   params.addClassDescription(
       "Base class for plasticity return-map algorithm for (P, Q) plastic models.");
-      
+
   params.addRangeCheckedParam<unsigned int>(
       "max_NR_iterations",
       20,
@@ -57,14 +57,14 @@ GamusinoPQPlasticity::GamusinoPQPlasticity(const InputParameters & parameters)
     _dq_dqt(0.0)
 {
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoPQPlasticity::initQpStatefulProperties()
 {
   _plastic_strain[_qp].zero();
   _intnl[_qp] = 0.0;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoPQPlasticity::updateStress(RankTwoTensor & strain_increment,
                                 RankTwoTensor & inelastic_strain_increment,
@@ -248,7 +248,7 @@ GamusinoPQPlasticity::updateStress(RankTwoTensor & strain_increment,
                             compute_full_tangent_operator,
                             tangent_operator);
 }
-
+/* -------------------------------------------------------------------------- */
 GamusinoPQPlasticity::yieldAndFlow
 GamusinoPQPlasticity::calcAllQuantities(Real p, Real q, const Real & intnl)
 {
@@ -299,7 +299,7 @@ GamusinoPQPlasticity::calcAllQuantities(Real p, Real q, const Real & intnl)
 
   return F_and_Q;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoPQPlasticity::dVardTrial(bool elastic_only,
                               Real p_trial,
@@ -466,7 +466,7 @@ GamusinoPQPlasticity::lineSearch(Real & res2,
 
   return 0;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoPQPlasticity::dnRHSdVar(const yieldAndFlow & F_and_Q,
                              const std::vector<Real> & dintnl,
@@ -527,7 +527,7 @@ GamusinoPQPlasticity::nrStep(
       &gesv_num_rhs, &nrhs, &jac[0], &gesv_num_rhs, &ipiv[0], &_rhs[0], &gesv_num_rhs, &info);
   return info;
 }
-
+/* -------------------------------------------------------------------------- */
 Real
 GamusinoPQPlasticity::calculateRHS(
     Real p_trial, Real q_trial, Real p, Real q, Real gaE, const yieldAndFlow & F_and_Q)
@@ -537,7 +537,7 @@ GamusinoPQPlasticity::calculateRHS(
   _rhs[2] = q - q_trial + _Eqq * gaE / _Epp * F_and_Q.dg[1];
   return _rhs[0] * _rhs[0] + _rhs[1] * _rhs[1] + _rhs[2] * _rhs[2];
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoPQPlasticity::initialiseVars(Real p_trial,
                                   Real q_trial,
@@ -552,7 +552,7 @@ GamusinoPQPlasticity::initialiseVars(Real p_trial,
   gaE = 0.0;
   intnl = intnl_old;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoPQPlasticity::consistentTangentOperator(const RankTwoTensor & stress_trial,
                                              const RankTwoTensor & stress,
@@ -612,7 +612,7 @@ GamusinoPQPlasticity::consistentTangentOperator(const RankTwoTensor & stress_tri
 
   cto = (cto.transposeMajor() * inv).transposeMajor();
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoPQPlasticity::setStressAfterReturn(const RankTwoTensor & stress_trial,
                                         Real gaE,
@@ -624,7 +624,7 @@ GamusinoPQPlasticity::setStressAfterReturn(const RankTwoTensor & stress_trial,
       elasticity_tensor * (F_and_Q.dg[0] * dpdstress(stress) + F_and_Q.dg[1] * dqdstress(stress));
   stress = stress_trial - gaE / _Epp * correction;
 }
-
+/* -------------------------------------------------------------------------- */
 void
 GamusinoPQPlasticity::setInelasticStrainIncrementAfterReturn(
     Real gaE,
