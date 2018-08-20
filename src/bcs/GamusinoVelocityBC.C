@@ -8,12 +8,17 @@ validParams<GamusinoVelocityBC>()
   params.addRequiredParam<Real>("velocity", "Value of the velocity applied.");
   return params;
 }
-
+/*******************************************************************************
+Routine: GamusinoVelocityBC --- constructor
+*******************************************************************************/
 GamusinoVelocityBC::GamusinoVelocityBC(const InputParameters & parameters)
   : PresetNodalBC(parameters), _u_old(valueOld()), _velocity(getParam<Real>("velocity"))
 {
 }
 
+/*******************************************************************************
+Routine: computeQpResidual
+*******************************************************************************/
 Real
 GamusinoVelocityBC::computeQpValue()
 {

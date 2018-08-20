@@ -12,6 +12,9 @@ validParams<GamusinoHeatFlowBC>()
   return params;
 }
 
+/*******************************************************************************
+Routine: GamusinoHeatFlowBC --- constructor
+*******************************************************************************/
 GamusinoHeatFlowBC::GamusinoHeatFlowBC(const InputParameters & parameters)
   : NeumannBC(parameters),
     _has_scaled_properties(isParamValid("scaling_uo") ? true : false),
@@ -20,6 +23,9 @@ GamusinoHeatFlowBC::GamusinoHeatFlowBC(const InputParameters & parameters)
 {
 }
 
+/*******************************************************************************
+Routine: computeQpResidual
+*******************************************************************************/
 Real
 GamusinoHeatFlowBC::computeQpResidual()
 {

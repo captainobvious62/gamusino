@@ -13,7 +13,9 @@ validParams<GamusinoPropertyReadFile>()
   params.addParam<unsigned int>("nele", 0, "number of elements to read.");
   return params;
 }
-
+/*******************************************************************************
+Routine: GamusinoPropertyReadFile -- constructor
+*******************************************************************************/
 GamusinoPropertyReadFile::GamusinoPropertyReadFile(const InputParameters & parameters)
   : GeneralUserObject(parameters),
     _prop_file_name(getParam<std::string>("prop_file_name")),
@@ -22,7 +24,9 @@ GamusinoPropertyReadFile::GamusinoPropertyReadFile(const InputParameters & param
 {
   readData();
 }
-
+/*******************************************************************************
+Routine: readData
+*******************************************************************************/
 void
 GamusinoPropertyReadFile::readData()
 {

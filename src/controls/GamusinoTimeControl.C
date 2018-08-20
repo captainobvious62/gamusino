@@ -12,7 +12,9 @@ validParams<GamusinoTimeControl>()
       "disable_objects", std::vector<std::string>(), "Objects to disable.");
   return params;
 }
-
+/*******************************************************************************
+Routine: GamusinoTimeControl --- constructor
+*******************************************************************************/
 GamusinoTimeControl::GamusinoTimeControl(const InputParameters & parameters)
   : Control(parameters),
     _function(getFunction("function")),
@@ -28,11 +30,17 @@ GamusinoTimeControl::GamusinoTimeControl(const InputParameters & parameters)
                "(disable) are possible!");
 }
 
+/*******************************************************************************
+Routine: initialSetup
+*******************************************************************************/
 void
 GamusinoTimeControl::initialSetup()
 {
 }
 
+/*******************************************************************************
+Routine: execute
+*******************************************************************************/
 void
 GamusinoTimeControl::execute()
 {

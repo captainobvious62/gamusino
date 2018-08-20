@@ -40,7 +40,11 @@ validParams<GamusinoMaterialH>()
 
   return params;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: GamusinoMaterialH -- constructor
+
+*******************************************************************************/
 GamusinoMaterialH::GamusinoMaterialH(const InputParameters & parameters)
   : GamusinoMaterialBase(parameters),
     _has_disp(isCoupled("displacements")),
@@ -78,7 +82,10 @@ GamusinoMaterialH::GamusinoMaterialH(const InputParameters & parameters)
     }
   }
 }
-/* -------------------------------------------------------------------------- */
+/*******************************************************************************
+Routine: permeabilityType
+
+*******************************************************************************/
 MooseEnum
 GamusinoMaterialH::permeabilityType()
 {
