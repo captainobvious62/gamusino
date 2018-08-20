@@ -32,6 +32,10 @@ validParams<GamusinoFunctionPointForce>()
   return params;
 }
 
+/*******************************************************************************
+Routine: GamusinoFunctionPointForce --- constructor
+*******************************************************************************/
+
 GamusinoFunctionPointForce::GamusinoFunctionPointForce(const InputParameters & parameters) : DiracKernel(parameters)
 {
   if (!isParamValid("point") && !isParamValid("x_position"))
@@ -62,6 +66,9 @@ GamusinoFunctionPointForce::GamusinoFunctionPointForce(const InputParameters & p
   }
 }
 
+/*******************************************************************************
+Routine: addPoints
+*******************************************************************************/
 void
 GamusinoFunctionPointForce::addPoints()
 {
@@ -102,6 +109,9 @@ GamusinoFunctionPointForce::addPoints()
   }
 }
 
+/*******************************************************************************
+Routine: computeQpResidual
+*******************************************************************************/
 Real
 GamusinoFunctionPointForce::computeQpResidual()
 {

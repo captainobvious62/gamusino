@@ -31,7 +31,10 @@ validParams<GamusinoPQPlasticity>()
                         "increase max_NR_iterations rather than decrease this parameter.");
   return params;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: GamusinoPQPlasticity -- constructor
+*******************************************************************************/
 GamusinoPQPlasticity::GamusinoPQPlasticity(const InputParameters & parameters)
   : GamusinoInelasticBase(parameters),
     _max_nr_its(getParam<unsigned>("max_NR_iterations")),

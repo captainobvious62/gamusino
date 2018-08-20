@@ -18,6 +18,9 @@ validParams<GamusinoDiracKernelTH>()
   return params;
 }
 
+/*******************************************************************************
+Routine: GamusinoDiracKernelTH -- constructor
+*******************************************************************************/
 GamusinoDiracKernelTH::GamusinoDiracKernelTH(const InputParameters & parameters)
   : DiracKernel(parameters),
     _has_scaled_properties(isParamValid("scaling_uo") ? true : false),
@@ -41,18 +44,27 @@ GamusinoDiracKernelTH::GamusinoDiracKernelTH(const InputParameters & parameters)
     mooseWarning("Trying to set a Dirac kernel object on start_time == end_time == 0!");
 }
 
+/*******************************************************************************
+Routine: addPoints
+*******************************************************************************/
 void
 GamusinoDiracKernelTH::addPoints()
 {
   addPoint(_source_point);
 }
 
+/*******************************************************************************
+Routine:Type
+*******************************************************************************/
 MooseEnum
 GamusinoDiracKernelTH::Type()
 {
   return MooseEnum("injection=1 extraction=2");
 }
 
+/*******************************************************************************
+Routine: computeQpResidual
+*******************************************************************************/
 Real
 GamusinoDiracKernelTH::computeQpResidual()
 {
@@ -79,6 +91,9 @@ GamusinoDiracKernelTH::computeQpResidual()
   }
 }
 
+/*******************************************************************************
+Routine: computeQpJacobian
+*******************************************************************************/
 Real
 GamusinoDiracKernelTH::computeQpJacobian()
 {

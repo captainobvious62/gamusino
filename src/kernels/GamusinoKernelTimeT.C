@@ -14,6 +14,9 @@ validParams<GamusinoKernelTimeT>()
   return params;
 }
 
+/*******************************************************************************
+Routine: GamusinoKernelTimeT --- constructor
+*******************************************************************************/
 GamusinoKernelTimeT::GamusinoKernelTimeT(const InputParameters & parameters)
   : DerivativeMaterialInterface<TimeDerivative>(parameters),
     _has_lumped_mass_matrix(getParam<bool>("has_lumped_mass_matrix")),

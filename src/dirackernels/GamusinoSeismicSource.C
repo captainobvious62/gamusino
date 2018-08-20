@@ -51,6 +51,9 @@ validParams<GamusinoSeismicSource>()
   return params;
 }
 
+/*******************************************************************************
+Routine: GamusinoSeismicSource --- constructor
+*******************************************************************************/
 GamusinoSeismicSource::GamusinoSeismicSource(const InputParameters & parameters)
   : DiracKernel(parameters),
     _component(getParam<unsigned int>("component")),
@@ -113,6 +116,9 @@ GamusinoSeismicSource::GamusinoSeismicSource(const InputParameters & parameters)
   _moment[2][2] = sin(2.0 * dip) * sin(rake);
 }
 
+/*******************************************************************************
+Routine: addPoints
+*******************************************************************************/
 void
 GamusinoSeismicSource::addPoints()
 {
@@ -153,6 +159,9 @@ GamusinoSeismicSource::addPoints()
   }
 }
 
+/*******************************************************************************
+Routine: computeQpResidual
+*******************************************************************************/
 Real
 GamusinoSeismicSource::computeQpResidual()
 {

@@ -222,7 +222,9 @@ GamusinoMaterialMElastic::strainModel()
 {
   return MooseEnum("small_strain=1 incr_small_strain=2 finite_strain=3");
 }
-/* -------------------------------------------------------------------------- */
+/*******************************************************************************
+Routine: permeabilityType -- identify permeability type
+*******************************************************************************/
 MooseEnum
 GamusinoMaterialMElastic::permeabilityType()
 {
@@ -249,8 +251,9 @@ GamusinoMaterialMElastic::setPropertiesM()
   setElasticModuli();
   setBackgroundStress();
 }
-/* -------------------------------------------------------------------------- */
-void
+/*******************************************************************************
+# Set initial strain model
+*******************************************************************************/void
 GamusinoMaterialMElastic::setStrainModel()
 {
   if (_strain_model > 1) // incremental strain model
@@ -518,7 +521,9 @@ GamusinoMaterialMElastic::initQpStatefulProperties()
   }
   _porosity[_qp] = _phi0;
 }
-/* -------------------------------------------------------------------------- */
+/*******************************************************************************
+Routine: computeProperties
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::computeProperties()
 {
@@ -526,8 +531,9 @@ GamusinoMaterialMElastic::computeProperties()
   for (_qp = 0; _qp < _qrule->n_points(); ++_qp)
     computeQpProperties();
 }
-/* -------------------------------------------------------------------------- */
-void
+/*******************************************************************************
+Routine: computeStrain
+*******************************************************************************/void
 GamusinoMaterialMElastic::computeStrain()
 {
   switch (_strain_model)

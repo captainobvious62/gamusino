@@ -15,7 +15,10 @@ InputParameters validParams<DynamicDarcyFlow>()
   params.addRequiredParam<Real>("gamma","gamma parameter");
   return params;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: DynamicDarcyFlow -- constructor
+*******************************************************************************/
 DynamicDarcyFlow::DynamicDarcyFlow(const InputParameters & parameters)
   :Kernel(parameters),
    _rhof(getMaterialProperty<Real>("rhof")),

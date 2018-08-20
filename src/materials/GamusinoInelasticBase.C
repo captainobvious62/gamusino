@@ -15,6 +15,9 @@ validParams<GamusinoInelasticBase>()
   params.suppressParameter<bool>("compute");
   return params;
 }
+/*******************************************************************************
+Routine: GamusinoInelasticBase -- constructor
+*******************************************************************************/
 
 GamusinoInelasticBase::GamusinoInelasticBase(const InputParameters & parameters)
   : Material(parameters),
@@ -22,6 +25,9 @@ GamusinoInelasticBase::GamusinoInelasticBase(const InputParameters & parameters)
 {
 }
 
+/*******************************************************************************
+Routine: setQp
+*******************************************************************************/
 void
 GamusinoInelasticBase::setQp(unsigned int qp)
 {
