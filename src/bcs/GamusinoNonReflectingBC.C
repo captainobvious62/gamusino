@@ -7,12 +7,12 @@ registerMooseObject("GamusinoApp", GamusinoNonReflectingBC);
 
 template <>
 InputParameters
-validParams<NonReflectingBC>()
+validParams<GamusinoNonReflectingBC>()
 {
   InputParameters params = validParams<IntegratedBC>();
   params.addClassDescription("Applies Lysmer damper in the normal and "
                              "tangential directions to soil boundary.");
-  params += NonReflectingBC::commonParameters();
+  params += GamusinoNonReflectingBC::commonParameters();
   params.addRequiredParam<unsigned int>("component",
                                         "The direction in which the Lysmer damper is applied.");
   params.set<bool>("use_displaced_mesh") = true;

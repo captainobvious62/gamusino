@@ -17,6 +17,9 @@ validParams<GamusinoStress>()
   return params;
 }
 
+/*******************************************************************************
+Routine: GamusinoStress -- constructor
+*******************************************************************************/
 GamusinoStress::GamusinoStress(const InputParameters & parameters)
   : AuxKernel(parameters),
     _stress(getMaterialProperty<RankTwoTensor>("stress")),
@@ -25,6 +28,9 @@ GamusinoStress::GamusinoStress(const InputParameters & parameters)
 {
 }
 
+/*******************************************************************************
+Routine: computeValue
+*******************************************************************************/
 Real
 GamusinoStress::computeValue()
 {

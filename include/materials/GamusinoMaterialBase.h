@@ -39,13 +39,11 @@ protected:
 // MOOSE enumerator
 // ================
   MooseEnum _material_type;     // material type option
-
 // ========================================================
 // flags to indicate the involvement of terms and equations
 // ========================================================
   bool _has_scaled_properties;  // flag to indicate use of scaling factors
   bool _has_gravity;            // flag indicating use of grav body force
-
 
 // =====================
 // user-input parameters

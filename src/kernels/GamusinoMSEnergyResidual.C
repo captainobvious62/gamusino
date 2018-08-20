@@ -1,14 +1,14 @@
-#include "GMSEnergyResidual.h"
+#include "GamusinoMSEnergyResidual.h"
 
 template <>
 InputParameters
-validParams<GMSEnergyResidual>()
+validParams<GamusinoMSEnergyResidual>()
 {
   InputParameters params = validParams<Kernel>();
   return params;
 }
 
-GMSEnergyResidual::GMSEnergyResidual(const InputParameters & parameters)
+GamusinoMSEnergyResidual::GamusinoMSEnergyResidual(const InputParameters & parameters)
   : Kernel(parameters),
     _bulk_thermal_conductivity(getMaterialProperty<Real>("bulk_thermal_conductivity")),
     _heat_production(getMaterialProperty<Real>("heat_production")),
@@ -19,7 +19,7 @@ GMSEnergyResidual::GMSEnergyResidual(const InputParameters & parameters)
 }
 
 Real
-GMSEnergyResidual::computeQpResidual()
+GamusinoMSEnergyResidual::computeQpResidual()
 {
   Real diff;
   Real e_source;
@@ -42,7 +42,7 @@ GMSEnergyResidual::computeQpResidual()
 /*                                  JACOBIAN                                  */
 /******************************************************************************/
 Real
-GMSEnergyResidual::computeQpJacobian()
+GamusinoMSEnergyResidual::computeQpJacobian()
 {
   Real diff;
   if (_fe_problem.isTransient())

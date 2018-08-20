@@ -9,6 +9,14 @@ InputParameters
 validParams<GamusinoMaterialBase>()
 {
   InputParameters params = validParams<Material>();
+  params.addParam<MooseEnum>("material_type",
+                             GamusinoMaterialBase::materialType() = "unit",
+                             "The type of the geological material [unit, frac, well].");
+
+  params.addParam<bool>("has_gravity",
+                        false,
+                        "Is gravity on?");
+
   params.addParam<Real>("fluid_density_initial",
                         0.0,
                         "The initial density of the fluid [kg/m^3].");
@@ -20,10 +28,6 @@ validParams<GamusinoMaterialBase>()
   params.addParam<Real>("porosity_initial",
                         0.0,
                         "The initial porosity [frac].");
-
-  params.addParam<bool>("has_gravity",
-                        false,
-                        "Is gravity on?");
 
   params.addParam<Real>("gravity_acceleration",
                         9.81,
@@ -44,9 +48,6 @@ validParams<GamusinoMaterialBase>()
                         0.0,
                         "The volumetric thermal expansion coefficient of the solid [1/K].");
 
-  params.addParam<MooseEnum>("material_type",
-                             GamusinoMaterialBase::materialType() = "unit",
-                             "The type of the geological material [unit, frac, well].");
 
   params.addParam<UserObjectName>("scaling_uo",
                                   "The name of the scaling user object.");
@@ -70,8 +71,8 @@ GamusinoMaterialBase::GamusinoMaterialBase(const InputParameters & parameters)
   // ========================================================
   // flags to indicate the involvement of terms and equations
   // ========================================================
-    _has_gravity(getParam<bool>("has_gravity")),
     _has_scaled_properties(isParamValid("scaling_uo")),
+    _has_gravity(getParam<bool>("has_gravity")),
 
   // =====================
   // user-input parameters
@@ -80,19 +81,20 @@ GamusinoMaterialBase::GamusinoMaterialBase(const InputParameters & parameters)
     _rho0_s(getParam<Real>("solid_density_initial")),
     _phi0(getParam<Real>("porosity_initial")),
     _g(getParam<Real>("gravity_acceleration")),
+    _scaling_factor0(getParam<Real>("scaling_factor_initial")),
+    _function_scaling(isParamValid("function_scaling") ? &getFunction("function_scaling") : NULL),
     _alpha_T_f(getParam<Real>("fluid_thermal_expansion")),
     _alpha_T_s(getParam<Real>("solid_thermal_expansion")),
-    _scaling_factor0(getParam<Real>("scaling_factor_initial")),
 
   // =====================
   // user objects
   // =====================
-    _function_scaling(isParamValid("function_scaling") ? &getFunction("function_scaling") : NULL),
-    _scaling_uo(_has_scaled_properties ? &getUserObject<GamusinoScaling>("scaling_uo") : NULL),
+
     _fluid_density_uo(NULL),
     _fluid_viscosity_uo(NULL),
     _permeability_uo(NULL),
     _porosity_uo(&getUserObject<GamusinoPorosity>("porosity_uo")),
+    _scaling_uo(_has_scaled_properties ? &getUserObject<GamusinoScaling>("scaling_uo") : NULL),
 
   // ===================
   // material properties
@@ -217,6 +219,9 @@ GamusinoMaterialBase::computeRotationMatrix()
   }
 }
 
+/*******************************************************************************
+Routine: materialType -- designate material type
+*******************************************************************************/
 MooseEnum
 GamusinoMaterialBase::materialType()
 {

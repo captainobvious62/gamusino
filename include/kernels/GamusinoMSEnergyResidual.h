@@ -1,17 +1,17 @@
-#ifndef GMSENERGYRESIDUAL_H
-#define GMSENERGYRESIDUAL_H
+#ifndef GAMUSINOMSENERGYRESIDUAL_H
+#define GAMUSINOMSENERGYRESIDUAL_H
 
 #include "Kernel.h"
 
-class GMSEnergyResidual;
+class GamusinoMSEnergyResidual;
 
 template <>
-InputParameters validParams<GMSEnergyResidual>();
+InputParameters validParams<GamusinoMSEnergyResidual>();
 
-class GMSEnergyResidual : public Kernel
+class GamusinoMSEnergyResidual : public Kernel
 {
 public:
-  GMSEnergyResidual(const InputParameters & parameters);
+  GamusinoMSEnergyResidual(const InputParameters & parameters);
 
 protected:
   virtual Real computeQpResidual();
@@ -24,4 +24,4 @@ protected:
   const MaterialProperty<Real> & _scale_factor;
 };
 
-#endif // GMSENERGYRESIDUAL_H
+#endif // GAMUSINOMSENERGYRESIDUAL_H

@@ -55,9 +55,11 @@ GamusinoKernelH::computeQpResidual()
   // ===========================================================================
   // Boussinesq
   Real boussinesq = 0.0;
-  if (_has_boussinesq)
+  if (_has_boussinesq) {
     boussinesq += (vel / (*_fluid_density)[_qp]) *
                   ((*_drho_dpf)[_qp] * _grad_u[_qp] + (*_drho_dT)[_qp] * (*_grad_temp)[_qp]);
+  }
+  
   return _scaling_factor[_qp] * (vel * _grad_test[_i][_qp] + boussinesq * _test[_i][_qp]);
 }
 
@@ -88,13 +90,17 @@ GamusinoKernelH::computeQpJacobian()
     RealVectorValue boussinesq =
         (*_drho_dpf)[_qp] * _grad_u[_qp] + (*_drho_dT)[_qp] * (*_grad_temp)[_qp];
     Real dboussinesq_dpf = 0.0;
+
     // First term related to dvel_dpf
     dboussinesq_dpf += (dvel_dpf / (*_fluid_density)[_qp]) * boussinesq * _phi[_j][_qp];
+
     // Second term related to drho_dpf
     dboussinesq_dpf += -(vel * (*_drho_dpf)[_qp] / Utility::pow<2>((*_fluid_density)[_qp])) *
                        boussinesq * _phi[_j][_qp];
+
     // Third term related to dgrad_u_dpf
     dboussinesq_dpf += (vel / (*_fluid_density)[_qp]) * ((*_drho_dpf)[_qp] * _grad_phi[_j][_qp]);
+
     // // first term related to qd
     // RealVectorValue dqp_dp = (coeff_1 + coeff_2) * _phi[_j][_qp] + coeff_3;
     // RealVectorValue boussinesq =
@@ -138,13 +144,17 @@ GamusinoKernelH::computeQpOffDiagJacobian(unsigned int jvar)
       RealVectorValue boussinesq =
           (*_drho_dpf)[_qp] * _grad_u[_qp] + (*_drho_dT)[_qp] * (*_grad_temp)[_qp];
       Real dboussinesq_dT = 0.0;
+
       // First term related to dvel_dT
       dboussinesq_dT += (dvel_dT / (*_fluid_density)[_qp]) * boussinesq * _phi[_j][_qp];
+
       // Second term related to drho_dT
       dboussinesq_dT += -(vel * (*_drho_dT)[_qp] / Utility::pow<2>((*_fluid_density)[_qp])) *
                         boussinesq * _phi[_j][_qp];
+
       // Third term related to dgrad_T_dpf
       dboussinesq_dT += (vel / (*_fluid_density)[_qp]) * ((*_drho_dT)[_qp] * _grad_phi[_j][_qp]);
+
       // // first term related to qd
       // RealVectorValue dqd_dT = coeff_1 + coeff_2;
       // RealVectorValue boussinesq =

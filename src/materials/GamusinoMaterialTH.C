@@ -69,7 +69,10 @@ validParams<GamusinoMaterialTH>()
                              "properties.");
   return params;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: GamusinoMaterialTH -- constructor
+*******************************************************************************/
 GamusinoMaterialTH::GamusinoMaterialTH(const InputParameters & parameters)
   : GamusinoMaterialH(parameters),
     _has_T_source_sink(getParam<bool>("has_heat_source_sink")),
@@ -159,7 +162,10 @@ GamusinoMaterialTH::GamusinoMaterialTH(const InputParameters & parameters)
   else
     _dH_kernel_dpf = &declareProperty<RankTwoTensor>("dH_kernel_dpf");
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: computeProperties
+*******************************************************************************/
 void
 GamusinoMaterialTH::computeProperties()
 {
@@ -168,7 +174,10 @@ GamusinoMaterialTH::computeProperties()
   for (_qp = 0; _qp < _qrule->n_points(); ++_qp)
     computeQpProperties();
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: computeQpProperties
+*******************************************************************************/
 void
 GamusinoMaterialTH::computeQpProperties()
 {
@@ -187,35 +196,44 @@ GamusinoMaterialTH::computeQpProperties()
   _porosity[_qp] = _porosity_uo->computePorosity(_phi0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
   _permeability[_qp] =
       _permeability_uo->computePermeability(_k0, _phi0, _porosity[_qp], _scaling_factor[_qp]);
+
   // GamusinoKernelT related properties
   _T_kernel_diff[_qp] = _porosity[_qp] * _lambda_f + (1.0 - _porosity[_qp]) * _lambda_s;
   if (_has_T_source_sink)
     (*_T_kernel_source)[_qp] = -1.0 * _T_source_sink;
+
   // GamusinoKernelH related properties
   GamusinoPropertiesH();
+
   // GamusinokernelTH related poperties
   _TH_kernel[_qp] = -_H_kernel[_qp] * _fluid_density[_qp] * _c_f;
   if (_fe_problem.isTransient())
   {
+
     // Correct H_kernel_time
     if (_drho_dpf[_qp] != 0.0)
       (*_H_kernel_time)[_qp] = (_porosity[_qp] * _drho_dpf[_qp]) / _fluid_density[_qp];
     (*_T_kernel_time)[_qp] =
         _porosity[_qp] * _fluid_density[_qp] * _c_f + (1.0 - _porosity[_qp]) * _rho0_s * _c_s;
   }
+
   // Properties derivatives
+
   // H_kernel derivatives
   (*_dH_kernel_dpf)[_qp] = -_H_kernel[_qp] * _dmu_dpf[_qp] / _fluid_viscosity[_qp];
   _dH_kernel_dT[_qp] = -_H_kernel[_qp] * _dmu_dT[_qp] / _fluid_viscosity[_qp];
+
   // H_kernel_grav derivatives
   _dH_kernel_grav_dpf[_qp] = -_drho_dpf[_qp] * _gravity;
   _dH_kernel_grav_dT[_qp] = -_drho_dT[_qp] * _gravity;
   if (_fe_problem.isTransient())
   {
+
     // T_kernel_time
     (*_dT_kernel_time_dpf)[_qp] = _drho_dpf[_qp] * _porosity[_qp] * _c_f;
     (*_dT_kernel_time_dT)[_qp] = _drho_dT[_qp] * _porosity[_qp] * _c_f;
   }
+
   // TH_kernel derivatives
   _dTH_kernel_dpf[_qp] = -(_fluid_density[_qp] * _c_f * (*_dH_kernel_dpf)[_qp] +
                            _H_kernel[_qp] * _c_f * _drho_dpf[_qp]);
@@ -225,6 +243,7 @@ GamusinoMaterialTH::computeQpProperties()
     computeQpSUPG();
   if (_has_disp)
   {
+
     // Declare some property when this material is used for fractures or faults in a THM simulation
     (*_dH_kernel_dev)[_qp] = RankTwoTensor();
     (*_dT_kernel_diff_dev)[_qp] = 0.0;
@@ -239,7 +258,10 @@ GamusinoMaterialTH::computeQpProperties()
     }
   }
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: computeDensity
+*******************************************************************************/
 void
 GamusinoMaterialTH::computeDensity()
 {
@@ -259,7 +281,10 @@ GamusinoMaterialTH::computeDensity()
   _drho_dT[_qp] = _fluid_density_uo->computedDensitydT(pres, temp, _rho0_f);
   _drho_dpf[_qp] = _fluid_density_uo->computedDensitydp(pres, temp);
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: computeViscosity
+*******************************************************************************/
 void
 GamusinoMaterialTH::computeViscosity()
 {
@@ -274,7 +299,10 @@ GamusinoMaterialTH::computeViscosity()
   _dmu_dpf[_qp] =
       _fluid_viscosity_uo->computedViscositydp(temp, _fluid_density[_qp], _drho_dpf[_qp]);
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: computeQpSUPG
+*******************************************************************************/
 void
 GamusinoMaterialTH::computeQpSUPG()
 {
@@ -293,7 +321,10 @@ GamusinoMaterialTH::computeQpSUPG()
   if (_has_disp)
     (*_SUPG_dtau_dev)[_qp] = 0.0;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: nearest
+*******************************************************************************/
 unsigned
 GamusinoMaterialTH::nearest()
 {

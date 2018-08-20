@@ -1,4 +1,4 @@
-#include "GMSMaterial.h"
+#include "GamusinoMSMaterial.h"
 #include "libmesh/quadrature.h"
 #include "MooseMesh.h"
 
@@ -7,7 +7,7 @@
 
 template <>
 InputParameters
-validParams<GMSMaterial>()
+validParams<GamusinoMSMaterial>()
 {
   InputParameters params = validParams<Material>();
   params.addClassDescription("material class to run steady pressure load and steady/transient heat "
@@ -52,8 +52,11 @@ validParams<GMSMaterial>()
 
   return params;
 }
-/* -------------------------------------------------------------------------- */
-GMSMaterial::GMSMaterial(const InputParameters & parameters)
+
+/*******************************************************************************
+Routine: GamusinoMSMaterial -- constructor
+*******************************************************************************/
+GamusinoMSMaterial::GamusinoMSMaterial(const InputParameters & parameters)
   : Material(parameters),
     // Coupled variables
     _is_temp_coupled(isCoupled("temperature")),
@@ -84,9 +87,12 @@ GMSMaterial::GMSMaterial(const InputParameters & parameters)
     _h_prod = (_is_temp_coupled ? getParam<Real>("heat_production") : 0.);
   }
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: computeQpProperties
+*******************************************************************************/
 void
-GMSMaterial::computeQpProperties()
+GamusinoMSMaterial::computeQpProperties()
 {
   if (_has_read_prop_uo)
   {
@@ -127,9 +133,12 @@ GMSMaterial::computeQpProperties()
   else
     _gravity[_qp] = RealVectorValue(-9.81, 0., 0.);
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: computeEOSlambda
+*******************************************************************************/
 Real
-GMSMaterial::computeEOSlambda(Real temperature, Real pressure)
+GamusinoMSMaterial::computeEOSlambda(Real temperature, Real pressure)
 {
   Real lambda0, n, a, temp0 = 298.0;
   Real temp = temperature + KELVIN;

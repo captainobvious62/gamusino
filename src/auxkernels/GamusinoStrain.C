@@ -21,6 +21,9 @@ validParams<GamusinoStrain>()
   return params;
 }
 
+/*******************************************************************************
+Routine: GamusinoStrain -- constructor
+*******************************************************************************/
 GamusinoStrain::GamusinoStrain(const InputParameters & parameters)
   : AuxKernel(parameters),
     _strain_type(getParam<MooseEnum>("strain_type")),
@@ -41,6 +44,9 @@ GamusinoStrain::GamusinoStrain(const InputParameters & parameters)
   }
 }
 
+/*******************************************************************************
+Routine: strainType
+*******************************************************************************/
 MooseEnum
 GamusinoStrain::strainType()
 {

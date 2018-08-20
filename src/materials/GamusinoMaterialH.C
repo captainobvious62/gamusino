@@ -84,14 +84,16 @@ GamusinoMaterialH::GamusinoMaterialH(const InputParameters & parameters)
 }
 /*******************************************************************************
 Routine: permeabilityType
-
 *******************************************************************************/
 MooseEnum
 GamusinoMaterialH::permeabilityType()
 {
   return MooseEnum("isotropic=1 orthotropic=2 anisotropic=3");
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: computeProperties
+*******************************************************************************/
 void
 GamusinoMaterialH::computeProperties()
 {
@@ -100,7 +102,10 @@ GamusinoMaterialH::computeProperties()
   for (_qp = 0; _qp < _qrule->n_points(); ++_qp)
     computeQpProperties();
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: computeQpProperties
+*******************************************************************************/
 void
 GamusinoMaterialH::computeQpProperties()
 {
@@ -123,7 +128,10 @@ GamusinoMaterialH::computeQpProperties()
     }
   }
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: GamusinoPropertiesH
+*******************************************************************************/
 void
 GamusinoMaterialH::GamusinoPropertiesH()
 {

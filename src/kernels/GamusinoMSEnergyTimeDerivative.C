@@ -1,20 +1,20 @@
-#include "GMSEnergyTimeDerivative.h"
+#include "GamusinoMSEnergyTimeDerivative.h"
 
 template <>
 InputParameters
-validParams<GMSEnergyTimeDerivative>()
+validParams<GamusinoMSEnergyTimeDerivative>()
 {
   InputParameters params = validParams<TimeDerivative>();
   return params;
 }
 
-GMSEnergyTimeDerivative::GMSEnergyTimeDerivative(const InputParameters & parameters)
+GamusinoMSEnergyTimeDerivative::GamusinoMSEnergyTimeDerivative(const InputParameters & parameters)
   : TimeDerivative(parameters)
 {
 }
 
 Real
-GMSEnergyTimeDerivative::computeQpResidual()
+GamusinoMSEnergyTimeDerivative::computeQpResidual()
 {
   return TimeDerivative::computeQpResidual();
 }
@@ -23,7 +23,7 @@ GMSEnergyTimeDerivative::computeQpResidual()
 /*                                  JACOBIAN                                  */
 /******************************************************************************/
 Real
-GMSEnergyTimeDerivative::computeQpJacobian()
+GamusinoMSEnergyTimeDerivative::computeQpJacobian()
 {
   return TimeDerivative::computeQpJacobian();
 }

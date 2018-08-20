@@ -8,11 +8,17 @@ validParams<GamusinoFluidVelocity>()
   return params;
 }
 
+/*******************************************************************************
+Routine: GamusinoFluidVelocity -- constructor
+*******************************************************************************/
 GamusinoFluidVelocity::GamusinoFluidVelocity(const InputParameters & parameters)
   : GamusinoDarcyVelocity(parameters), _porosity(getMaterialProperty<Real>("porosity"))
 {
 }
 
+/*******************************************************************************
+Routine: computeValue
+*******************************************************************************/
 Real
 GamusinoFluidVelocity::computeValue()
 {

@@ -11,6 +11,9 @@ validParams<GamusinoDarcyVelocity>()
   return params;
 }
 
+/*******************************************************************************
+Routine: GamusinoDarcyVelocity -- constructor
+*******************************************************************************/
 GamusinoDarcyVelocity::GamusinoDarcyVelocity(const InputParameters & parameters)
   : AuxKernel(parameters),
     _grad_pf(coupledGradient("pore_pressure")),
@@ -20,6 +23,9 @@ GamusinoDarcyVelocity::GamusinoDarcyVelocity(const InputParameters & parameters)
 {
 }
 
+/*******************************************************************************
+Routine: computeValue
+*******************************************************************************/
 Real
 GamusinoDarcyVelocity::computeValue()
 {

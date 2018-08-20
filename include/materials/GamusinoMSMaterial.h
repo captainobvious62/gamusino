@@ -1,18 +1,18 @@
-#ifndef GMSMATERIAL_H
-#define GMSMATERIAL_H
+#ifndef GAMUSINOMSMATERIAL_H
+#define GAMUSINOMSMATERIAL_H
 
 #include "Material.h"
 #include "GamusinoPropertyReadFile.h"
 
-class GMSMaterial;
+class GamusinoMSMaterial;
 
 template <>
-InputParameters validParams<GMSMaterial>();
+InputParameters validParams<GamusinoMSMaterial>();
 
-class GMSMaterial : public Material
+class GamusinoMSMaterial : public Material
 {
 public:
-  GMSMaterial(const InputParameters & parameters);
+  GamusinoMSMaterial(const InputParameters & parameters);
 
 protected:
   virtual void computeQpProperties();
@@ -42,4 +42,4 @@ protected:
   MaterialProperty<RealVectorValue> & _gravity;
 };
 
-#endif // GMSMATERIAL_H
+#endif // GAMUSINOMSMATERIAL_H

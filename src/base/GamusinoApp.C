@@ -46,9 +46,9 @@
 #include "GamusinoKernelTH.h"
 #include "GamusinoKernelTimeH.h"
 #include "GamusinoKernelTimeT.h"
-#include "GMSEnergyResidual.h"
-#include "GMSEnergyTimeDerivative.h"
-#include "GMSMassResidual.h"
+#include "GamusinoMSEnergyResidual.h"
+#include "GamusinoMSEnergyTimeDerivative.h"
+#include "GamusinoMSMassResidual.h"
 #include "MassConservationNewmark.h"
 #include "PoreFluidInertialForceCoupling.h"
 
@@ -61,8 +61,8 @@
 #include "GamusinoMaterialMInelastic.h"
 #include "GamusinoMaterialT.h"
 #include "GamusinoMaterialTH.h"
+#include "GamusinoMSMaterial.h"
 #include "GamusinoPQPlasticity.h"
-#include "GMSMaterial.h"
 
 // UserObjects
 #include "GamusinoFluidDensity.h"
@@ -135,7 +135,7 @@ void
 GamusinoApp::registerObjects(Factory & factory)
 {
   // Materials
-  registerMaterial(GMSMaterial);
+  registerMaterial(GamusinoMSMaterial);
   registerMaterial(GamusinoMaterialBase);
   registerMaterial(GamusinoMaterialH);
   registerMaterial(GamusinoMaterialT);
@@ -148,9 +148,9 @@ GamusinoApp::registerObjects(Factory & factory)
   registerKernel(PoreFluidInertialForceCoupling);
   registerKernel(DynamicDarcyFlow);
   registerKernel(MassConservationNewmark);
-  registerKernel(GMSEnergyTimeDerivative);
-  registerKernel(GMSEnergyResidual);
-  registerKernel(GMSMassResidual);
+  registerKernel(GamusinoMSEnergyTimeDerivative);
+  registerKernel(GamusinoMSEnergyResidual);
+  registerKernel(GamusinoMSMassResidual);
   registerKernel(GamusinoKernelTimeH);
   registerKernel(GamusinoKernelTimeT);
   registerKernel(GamusinoKernelH);
@@ -179,6 +179,8 @@ GamusinoApp::registerObjects(Factory & factory)
   registerBoundaryCondition(GamusinoVelocityBC);
   registerBoundaryCondition(GamusinoHeatFlowBC);
   registerBoundaryCondition(GamusinoPressureBC);
+  registerBoundaryCondition(GamusinoSeismicForce);
+  registerBoundaryCondition(GamusinoNonReflectingBC);
 
   // Controls
   registerControl(GamusinoTimeControl);

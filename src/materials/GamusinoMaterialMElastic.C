@@ -153,18 +153,9 @@ Routine: GamusinoMaterialMElastic -- constructor
 GamusinoMaterialMElastic::GamusinoMaterialMElastic(const InputParameters & parameters)
   : GamusinoMaterialBase(parameters),
 
-    _permeability_type(getParam<MooseEnum>("permeability_type")),
-
   // ========================================================
-  // flags to indicate the involvement of terms and equations
+  // Mechanical
   // ========================================================
-    _has_pf(isCoupled("pore_pressure")),
-    _has_T(isCoupled("temperature")),
-
-  // =====================
-  // user-input parameters
-  // =====================
-
     _ndisp(coupledComponents("displacements")),
     _disp(3),
     _grad_disp(3),
@@ -184,9 +175,21 @@ GamusinoMaterialMElastic::GamusinoMaterialMElastic(const InputParameters & param
     _porosity_old(getMaterialPropertyOld<Real>("porosity")),
     _crack_closure_set(isParamValid("end_bulk_modulus") && isParamValid("closure_pressure")),
 
+  // ========================================================
+  // Hydro - Mechanical
+  // ========================================================
+    _has_pf(isCoupled("pore_pressure")),
+    _permeability_type(getParam<MooseEnum>("permeability_type")),
 
+  // ========================================================
+  // Thermo - Hydro - Mechanical
+  // ========================================================
+    _has_T(isCoupled("temperature")),
     _has_T_source_sink(getParam<bool>("has_heat_source_sink"))
 
+/* ========================================================================== */
+/* Runtime                                                                    */
+/* ========================================================================== */
 {
   if (_ndisp != _mesh.dimension())
     mooseError(
@@ -214,6 +217,10 @@ GamusinoMaterialMElastic::GamusinoMaterialMElastic(const InputParameters & param
   if (_has_pf && _has_T)
     setPropertiesTHM();
 }
+/* ========================================================================== */
+/* Functions                                                                  */
+/* ========================================================================== */
+
 /*******************************************************************************
 Routine: strainModel -- identify strain model used
 *******************************************************************************/
@@ -232,7 +239,7 @@ GamusinoMaterialMElastic::permeabilityType()
 }
 
 /*******************************************************************************
-# Set initial properties
+# Set initial properties - Mechanical Only
 *******************************************************************************/
 void
 GamusinoMaterialMElastic::setPropertiesM()
@@ -242,6 +249,7 @@ GamusinoMaterialMElastic::setPropertiesM()
     _disp[i] = &coupledValue("displacements", i);
     _grad_disp[i] = &coupledGradient("displacements", i);
   }
+  // Zero out unused displacement dimensions
   for (unsigned int i = _ndisp; i < 3; ++i)
   {
     _disp[i] = &_zero;
@@ -253,7 +261,8 @@ GamusinoMaterialMElastic::setPropertiesM()
 }
 /*******************************************************************************
 # Set initial strain model
-*******************************************************************************/void
+*******************************************************************************/
+void
 GamusinoMaterialMElastic::setStrainModel()
 {
   if (_strain_model > 1) // incremental strain model
@@ -284,7 +293,9 @@ GamusinoMaterialMElastic::setStrainModel()
     }
   }
 }
-/* -------------------------------------------------------------------------- */
+/*******************************************************************************
+# Routine: setElasticModuli -- calculate elastic material properties
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::setElasticModuli()
 {
@@ -336,7 +347,10 @@ GamusinoMaterialMElastic::setElasticModuli()
     }
   }
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: setBackgroundStress
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::setBackgroundStress()
 {
@@ -352,13 +366,17 @@ GamusinoMaterialMElastic::setBackgroundStress()
   for (unsigned i = 0; i < num; ++i)
     _background_stress[i] = &getFunctionByName(fcn_names[i]);
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: setPropertiesHM -- set hydromechanical properties
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::setPropertiesHM()
 {
   if (!isParamValid("permeability_initial") || !isParamValid("fluid_viscosity_initial"))
     mooseError("GamusinoMaterialMElastic: You need to provide values for permeability and fluid "
                "viscosity for hydro-mechanical coupling!");
+
   // Parameters
   _k0 = getParam<std::vector<Real>>("permeability_initial");
   _mu0 = getParam<Real>("fluid_viscosity_initial");
@@ -372,6 +390,7 @@ GamusinoMaterialMElastic::setPropertiesHM()
     _Kf *= _scaling_uo->_s_compressibility;
     _Ks *= _scaling_uo->_s_compressibility;
   }
+
   // UserObject
   if (!isParamValid("fluid_viscosity_uo") || !isParamValid("permeability_uo"))
     mooseError("You must provide a FluidViscosity and Permeability UserObject for hydro-mechanical "
@@ -381,6 +400,7 @@ GamusinoMaterialMElastic::setPropertiesHM()
     _fluid_viscosity_uo = &getUserObject<GamusinoFluidViscosity>("fluid_viscosity_uo");
     _permeability_uo = &getUserObject<GamusinoPermeability>("permeability_uo");
   }
+
   // Properties
   _permeability = &declareProperty<std::vector<Real>>("permeability");
   if (_fe_problem.isTransient())
@@ -389,10 +409,12 @@ GamusinoMaterialMElastic::setPropertiesHM()
   _H_kernel = &declareProperty<RankTwoTensor>("H_kernel");
   _biot = &declareProperty<Real>("biot_coefficient");
   _vol_strain_rate = &declareProperty<Real>("volumetric_strain_rate");
+
   // Coupled Var
   _pf = &coupledValue("pore_pressure");
   if (_fe_problem.isTransient())
     _pf_old = &coupledValueOld("pore_pressure");
+
   // Properties derivatives
   _dphi_dev = &declareProperty<Real>("dphi_dev");
   _dphi_dpf = &declareProperty<Real>("dphi_dpf");
@@ -408,7 +430,10 @@ GamusinoMaterialMElastic::setPropertiesHM()
   _dM_kernel_grav_dev = &declareProperty<RealVectorValue>("dM_kernel_grav_dev");
   _dM_kernel_grav_dpf = &declareProperty<RealVectorValue>("dM_kernel_grav_dpf");
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: setPropertiesTM -- set thermomechanical properties
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::setPropertiesTM()
 {
@@ -416,6 +441,7 @@ GamusinoMaterialMElastic::setPropertiesTM()
       !isParamValid("solid_thermal_conductivity_initial"))
     mooseError("GamusinoMaterialMElastic: You need to provide values for thermal conductivities for "
                "thermo-mechanical coupling!");
+
   // Parameters
   _lambda_f = getParam<Real>("fluid_thermal_conductivity_initial");
   _lambda_s = getParam<Real>("solid_thermal_conductivity_initial");
@@ -430,30 +456,39 @@ GamusinoMaterialMElastic::setPropertiesTM()
     _c_s /= _scaling_uo->_s_specific_heat;
     _T_source_sink /= _scaling_uo->_s_heat_production;
   }
+
   // Properties
   if (_fe_problem.isTransient())
     _T_kernel_time = &declareProperty<Real>("T_kernel_time");
   _T_kernel_diff = &declareProperty<Real>("T_kernel_diff");
   if (_has_T_source_sink)
     _T_kernel_source = &declareProperty<Real>("T_kernel_source");
+
   // Coupled Var
   _temp = &coupledValue("temperature");
   if (_fe_problem.isTransient())
     _temp_old = &coupledValueOld("temperature");
+
   // Properties derivatices
   _TM_jacobian = &declareProperty<RankTwoTensor>("TM_jacobian");
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: setPropertiesTHM -- set thermohydromechanical properties
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::setPropertiesTHM()
 {
   // Parameters
   _has_SUPG_upwind = isParamValid("supg_uo") ? true : false;
   _has_lumped_mass_matrix = getParam<bool>("has_lumped_mass_matrix");
+
   // UserObject
   _supg_uo = _has_SUPG_upwind ? &getUserObject<GamusinoSUPG>("supg_uo") : NULL;
+
   // Properties
   _TH_kernel = &declareProperty<RankTwoTensor>("TH_kernel");
+
   // Properties derivatives
   _dphi_dT = &declareProperty<Real>("dphi_dT");
   _dk_dT = &declareProperty<std::vector<Real>>("dk_dT");
@@ -504,7 +539,10 @@ GamusinoMaterialMElastic::setPropertiesTHM()
     _nodal_pf_old = &declareProperty<Real>("nodal_pf_old");
   }
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: initQpStatefulProperties -- initialize state properties
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::initQpStatefulProperties()
 {
@@ -521,6 +559,7 @@ GamusinoMaterialMElastic::initQpStatefulProperties()
   }
   _porosity[_qp] = _phi0;
 }
+
 /*******************************************************************************
 Routine: computeProperties
 *******************************************************************************/
@@ -531,9 +570,11 @@ GamusinoMaterialMElastic::computeProperties()
   for (_qp = 0; _qp < _qrule->n_points(); ++_qp)
     computeQpProperties();
 }
+
 /*******************************************************************************
 Routine: computeStrain
-*******************************************************************************/void
+*******************************************************************************/
+void
 GamusinoMaterialMElastic::computeStrain()
 {
   switch (_strain_model)
@@ -605,7 +646,10 @@ GamusinoMaterialMElastic::computeStrain()
       break;
   }
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: computeQpFiniteStrain
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::computeQpFiniteStrain()
 {
@@ -650,7 +694,10 @@ GamusinoMaterialMElastic::computeQpFiniteStrain()
   // _mechanical_strain[_qp] = (*_rotation_increment)[_qp] * _mechanical_strain[_qp] *
   // (*_rotation_increment)[_qp].transpose();
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: computeQpProperties
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::computeQpProperties()
 {
@@ -660,8 +707,9 @@ GamusinoMaterialMElastic::computeQpProperties()
   if ((_has_pf) && (!_has_T))
   {
     // HM coupling
-    if (_current_elem->dim() < _mesh.dimension())
+    if (_current_elem->dim() < _mesh.dimension()) {
       computeRotationMatrix();
+    }
     GamusinoMatPropertiesHM();
     GamusinoKernelPropertiesHM();
     GamusinoKernelPropertiesDerivativesHM();
@@ -676,46 +724,60 @@ GamusinoMaterialMElastic::computeQpProperties()
   else if ((_has_T) && (_has_pf))
   {
     // THM coupling
-    if (_current_elem->dim() < _mesh.dimension())
+    if (_current_elem->dim() < _mesh.dimension()) {
       computeRotationMatrix();
+    }
     GamusinoMatPropertiesTHM();
     GamusinoKernelPropertiesTHM();
     GamusinoKernelPropertiesDerivativesTHM();
   }
-  else
+  else {
     GamusinoMatPropertiesM();
+  }
 
   // Mechanical properties
   GamusinoKernelPropertiesM();
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoCrackClosure
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoCrackClosure()
 {
   if (_crack_closure_set)
   {
     std::vector<Real> iso_const(2);
+
     // Bulk modulus
     Real K = 1. / (1. / (*_K_end) +
                    (1. / (*_K_i) - 1. / (*_K_end)) *
                        std::exp((*_stress_old)[_qp].trace() / (3.0 * (*_p_hat))));
     iso_const[0] = K - 2.0 / 3.0 * (*_G);
     iso_const[1] = (*_G);
+
     // Fill elasticity tensor
     _Cijkl[_qp].fillFromInputVector(iso_const, RankFourTensor::symmetric_isotropic);
   }
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoMatPropertiesHM
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoMatPropertiesHM()
 {
   _scaling_factor[_qp] = computeQpScaling();
+
   // Fluid density
   _fluid_density[_qp] = _fluid_density_uo->computeDensity(0.0, 0.0, _rho0_f);
+
   // Fluid viscosity
   _fluid_viscosity[_qp] = _fluid_viscosity_uo->computeViscosity(0.0, _fluid_density[_qp], _mu0);
+
   // Biot coefficient
   (*_biot)[_qp] = 1.0 - (_Cijkl[_qp](0, 0, 1, 1) + 2.0 / 3.0 * _Cijkl[_qp](0, 1, 0, 1)) / _Ks;
+
   // Porosity
   Real dev = (_fe_problem.isTransient()) * (*_total_strain_increment)[_qp].trace();
   Real dpf = 0.0;
@@ -725,6 +787,7 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesHM()
   (*_dphi_dpf)[_qp] = _porosity_uo->computedPorositydpf(_porosity_old[_qp], (*_biot)[_qp], _Ks);
   _porosity[_qp] = _porosity_uo->computePorosity(
       _porosity_old[_qp], (*_dphi_dev)[_qp], (*_dphi_dpf)[_qp], 0.0, dev, dpf, 0.0);
+
   // Permeability
   (*_permeability)[_qp] =
       _permeability_uo->computePermeability(_k0, _phi0, _porosity[_qp], _scaling_factor[_qp]);
@@ -733,7 +796,10 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesHM()
   (*_dk_dpf)[_qp] =
       _permeability_uo->computedPermeabilitydpf(_k0, _phi0, _porosity[_qp], (*_dphi_dpf)[_qp]);
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoKernelPropertiesHM
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesHM()
 {
@@ -747,7 +813,10 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesHM()
   (*_H_kernel_grav)[_qp] = -_fluid_density[_qp] * _gravity;
   (*_vol_strain_rate)[_qp] = (*_total_strain_increment)[_qp].trace() / _dt;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoKernelPropertiesDerivativesHM
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesHM()
 {
@@ -757,29 +826,40 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesHM()
       computeKernel((*_dk_dev)[_qp], _permeability_type, one_on_visc, _current_elem->dim());
   (*_dH_kernel_dpf)[_qp] =
       computeKernel((*_dk_dpf)[_qp], _permeability_type, one_on_visc, _current_elem->dim());
+
   // H_kernel_time derivatives
   if (_fe_problem.isTransient())
   {
     (*_dH_kernel_time_dpf)[_qp] = (*_dphi_dpf)[_qp] * (1.0 / _Kf - 1.0 / _Ks);
     (*_dH_kernel_time_dev)[_qp] = (*_dphi_dev)[_qp] * (1.0 / _Kf - 1.0 / _Ks);
   }
+
   // M_kernel_grav derivatives
   (*_dM_kernel_grav_dev)[_qp] = -(*_dphi_dev)[_qp] * (_fluid_density[_qp] - _rho0_s) * _gravity;
   (*_dM_kernel_grav_dpf)[_qp] = -(*_dphi_dpf)[_qp] * (_fluid_density[_qp] - _rho0_s) * _gravity;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoMatPropertiesTM
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoMatPropertiesTM()
 {
   _scaling_factor[_qp] = computeQpScaling();
+
   // Fluid density
   _fluid_density[_qp] = _fluid_density_uo->computeDensity(0.0, 0.0, _rho0_f);
+
   // Fluid viscosity
   _fluid_viscosity[_qp] = _mu0;
+
   // Porosity
   _porosity[_qp] = _porosity_uo->computePorosity(_porosity_old[_qp], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoKernelPropertiesTM
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesTM()
 {
@@ -790,7 +870,10 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesTM()
   if (_has_T_source_sink)
     (*_T_kernel_source)[_qp] = -1.0 * _T_source_sink;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoKernelPropertiesDerivativesTM
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesTM()
 {
@@ -800,7 +883,10 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesTM()
   (*_TM_jacobian)[_qp] = -bulk_thermal_expansion_coeff * _Cijkl[_qp] *
                          RankTwoTensor(RankTwoTensor::initIdentity) / 3.0;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoMatPropertiesTHM
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoMatPropertiesTHM()
 {
@@ -831,14 +917,17 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesTHM()
   (*_drho_dpf)[_qp] = _fluid_density_uo->computedDensitydp(pres, temp);
   (*_drho_dT)[_qp] = _fluid_density_uo->computedDensitydT(pres, temp, _rho0_f);
   _fluid_density[_qp] = _fluid_density_uo->computeDensity(pres, temp, _rho0_f);
+
   // Fluid viscosity
   (*_dmu_dpf)[_qp] =
       _fluid_viscosity_uo->computedViscositydp(temp, _fluid_density[_qp], (*_drho_dpf)[_qp]);
   (*_dmu_dT)[_qp] =
       _fluid_viscosity_uo->computedViscositydT(temp, _fluid_density[_qp], (*_drho_dT)[_qp], _mu0);
   _fluid_viscosity[_qp] = _fluid_viscosity_uo->computeViscosity(temp, _fluid_density[_qp], _mu0);
+
   // Biot coefficient
   (*_biot)[_qp] = 1.0 - (_Cijkl[_qp](0, 0, 1, 1) + 2.0 / 3.0 * _Cijkl[_qp](0, 1, 0, 1)) / _Ks;
+
   // Porosity
   Real dev = (_fe_problem.isTransient()) * (*_total_strain_increment)[_qp].trace();
   (*_dphi_dev)[_qp] = _porosity_uo->computedPorositydev(_porosity_old[_qp], (*_biot)[_qp]);
@@ -847,6 +936,7 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesTHM()
       _porosity_uo->computedPorositydT(_porosity_old[_qp], (*_biot)[_qp], _alpha_T_f, _alpha_T_s);
   _porosity[_qp] = _porosity_uo->computePorosity(
       _porosity_old[_qp], (*_dphi_dev)[_qp], (*_dphi_dpf)[_qp], (*_dphi_dT)[_qp], dev, dpf, dT);
+
   // Permeability
   (*_permeability)[_qp] =
       _permeability_uo->computePermeability(_k0, _phi0, _porosity[_qp], _scaling_factor[_qp]);
@@ -857,7 +947,10 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesTHM()
   (*_dk_dT)[_qp] =
       _permeability_uo->computedPermeabilitydT(_k0, _phi0, _porosity[_qp], (*_dphi_dT)[_qp]);
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoKernelPropertiesTHM
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesTHM()
 {
@@ -865,7 +958,10 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesTHM()
   GamusinoKernelPropertiesTM();
   (*_TH_kernel)[_qp] = -(*_H_kernel)[_qp] * _fluid_density[_qp] * _c_f;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoKernelPropertiesDerivativesTHM
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesTHM()
 {
@@ -873,6 +969,7 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesTHM()
   (*_dT_kernel_diff_dev)[_qp] = (*_dphi_dev)[_qp] * (_lambda_f - _lambda_s);
   (*_dT_kernel_diff_dpf)[_qp] = (*_dphi_dpf)[_qp] * (_lambda_f - _lambda_s);
   (*_dT_kernel_diff_dT)[_qp] = (*_dphi_dT)[_qp] * (_lambda_f - _lambda_s);
+
   // T_kernel_time  and H_kernel_time derivatives
   if (_fe_problem.isTransient())
   {
@@ -888,6 +985,7 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesTHM()
     (*_dH_kernel_time_dpf)[_qp] = (*_dphi_dpf)[_qp] * (1.0 / _Kf - 1.0 / _Ks);
     (*_dH_kernel_time_dT)[_qp] = (*_dphi_dT)[_qp] * (1.0 / _Kf - 1.0 / _Ks);
   }
+
   // H_kernel derivatives
   Real one_on_visc = 1.0 / _fluid_viscosity[_qp];
   (*_dH_kernel_dev)[_qp] =
@@ -898,24 +996,29 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesTHM()
   (*_dH_kernel_dT)[_qp] =
       computeKernel((*_dk_dT)[_qp], _permeability_type, one_on_visc, _current_elem->dim()) -
       (*_H_kernel)[_qp] * (*_dmu_dT)[_qp] / _fluid_viscosity[_qp];
+
   // H_kernel_grav derivatives
   (*_dH_kernel_grav_dpf)[_qp] = -(*_drho_dpf)[_qp] * _gravity;
   (*_dH_kernel_grav_dT)[_qp] = -(*_drho_dT)[_qp] * _gravity;
+
   // TH_kernel derivatives
   (*_dTH_kernel_dev)[_qp] = -_fluid_density[_qp] * _c_f * (*_dH_kernel_dpf)[_qp];
   (*_dTH_kernel_dpf)[_qp] = -(_fluid_density[_qp] * _c_f * (*_dH_kernel_dpf)[_qp] +
                               (*_H_kernel)[_qp] * _c_f * (*_drho_dpf)[_qp]);
   (*_dTH_kernel_dT)[_qp] = -(_fluid_density[_qp] * _c_f * (*_dH_kernel_dT)[_qp] +
                              (*_H_kernel)[_qp] * _c_f * (*_drho_dT)[_qp]);
+
   // TM stress derivative
   Real bulk_thermal_expansion_coeff =
       _porosity_old[_qp] * _alpha_T_f + (1.0 - _porosity_old[_qp]) * _alpha_T_s;
   (*_TM_jacobian)[_qp] = -bulk_thermal_expansion_coeff * _Cijkl[_qp] *
                          RankTwoTensor(RankTwoTensor::initIdentity) / 3.0;
+
   // M_kernel_grav derivatives
   (*_dM_kernel_grav_dev)[_qp] = -(*_dphi_dev)[_qp] * (_fluid_density[_qp] - _rho0_s) * _gravity;
   (*_dM_kernel_grav_dpf)[_qp] -= _porosity[_qp] * (*_drho_dpf)[_qp] * _gravity;
   (*_dM_kernel_grav_dT)[_qp] -= _porosity[_qp] * (*_drho_dT)[_qp] * _gravity;
+
   // SUPG
   if (_has_SUPG_upwind)
   {
@@ -937,7 +1040,10 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesDerivativesTHM()
     (*_SUPG_dtau_dev)[_qp] = tau * dvel_dev;
   }
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: nearest
+*******************************************************************************/
 unsigned
 GamusinoMaterialMElastic::nearest()
 {
@@ -954,16 +1060,22 @@ GamusinoMaterialMElastic::nearest()
   }
   return n;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoMatPropertiesM
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoMatPropertiesM()
 {
-  // FLuid density
+  // Fluid density
   _fluid_density[_qp] = _fluid_density_uo->computeDensity(0.0, 0.0, _rho0_f);
   // Porosity
   _porosity[_qp] = _porosity_uo->computePorosity(_porosity_old[_qp], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoKernelPropertiesM
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoKernelPropertiesM()
 {
@@ -972,7 +1084,10 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesM()
   _M_kernel_grav[_qp] =
       -(_porosity[_qp] * _fluid_density[_qp] + (1.0 - _porosity[_qp]) * _rho0_s) * _gravity;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoSubstractEigenStrain
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoSubstractEigenStrain()
 {
@@ -986,7 +1101,11 @@ GamusinoMaterialMElastic::GamusinoSubstractEigenStrain()
                                 (*_rotation_increment)[_qp].transpose();
   }
 }
-/* -------------------------------------------------------------------------- */
+
+
+/*******************************************************************************
+# Routine: substractThermalEigenStrain
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::substractThermalEigenStrain(RankTwoTensor & strain_incr)
 {
@@ -999,7 +1118,10 @@ GamusinoMaterialMElastic::substractThermalEigenStrain(RankTwoTensor & strain_inc
   }
   strain_incr -= thermal_es_incr;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+# Routine: GamusinoStress
+*******************************************************************************/
 void
 GamusinoMaterialMElastic::GamusinoStress()
 {
