@@ -18,7 +18,10 @@ validParams<GamusinoMaterialT>()
       "This is the base class for thermal (conductive) Gamusino material properties.");
   return params;
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: GamusinoMaterialT -- constructor
+*******************************************************************************/
 GamusinoMaterialT::GamusinoMaterialT(const InputParameters & parameters)
   : GamusinoMaterialBase(parameters),
     _has_T_source_sink(getParam<bool>("has_heat_source_sink")),
@@ -49,7 +52,10 @@ GamusinoMaterialT::GamusinoMaterialT(const InputParameters & parameters)
     _T_kernel_time = &declareProperty<Real>("T_kernel_time");
   }
 }
-/* -------------------------------------------------------------------------- */
+
+/*******************************************************************************
+Routine: computeQpProperties -- calculate properties at quadrature points
+*******************************************************************************/
 void
 GamusinoMaterialT::computeQpProperties()
 {

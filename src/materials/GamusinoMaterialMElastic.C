@@ -153,6 +153,8 @@ Routine: GamusinoMaterialMElastic -- constructor
 GamusinoMaterialMElastic::GamusinoMaterialMElastic(const InputParameters & parameters)
   : GamusinoMaterialBase(parameters),
 
+    _permeability_type(getParam<MooseEnum>("permeability_type")),
+
   // ========================================================
   // flags to indicate the involvement of terms and equations
   // ========================================================
@@ -182,9 +184,9 @@ GamusinoMaterialMElastic::GamusinoMaterialMElastic(const InputParameters & param
     _porosity_old(getMaterialPropertyOld<Real>("porosity")),
     _crack_closure_set(isParamValid("end_bulk_modulus") && isParamValid("closure_pressure")),
 
-    _permeability_type(getParam<MooseEnum>("permeability_type")),
 
     _has_T_source_sink(getParam<bool>("has_heat_source_sink"))
+
 {
   if (_ndisp != _mesh.dimension())
     mooseError(
@@ -212,7 +214,9 @@ GamusinoMaterialMElastic::GamusinoMaterialMElastic(const InputParameters & param
   if (_has_pf && _has_T)
     setPropertiesTHM();
 }
-/* -------------------------------------------------------------------------- */
+/*******************************************************************************
+Routine: strainModel -- identify strain model used
+*******************************************************************************/
 MooseEnum
 GamusinoMaterialMElastic::strainModel()
 {
