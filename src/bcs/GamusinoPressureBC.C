@@ -14,7 +14,9 @@ validParams<GamusinoPressureBC>()
   params.set<bool>("use_displaced_mesh") = true;
   return params;
 }
-
+/*******************************************************************************
+Routine: GamusinoPressureBC --- constructor
+*******************************************************************************/
 GamusinoPressureBC::GamusinoPressureBC(const InputParameters & parameters)
   : NeumannBC(parameters),
     _has_scaled_properties(isParamValid("scaling_uo") ? true : false),
@@ -26,6 +28,9 @@ GamusinoPressureBC::GamusinoPressureBC(const InputParameters & parameters)
     mooseError("Invalid component given GamusinoPressureBC: ", _component, ".\n");
 }
 
+/*******************************************************************************
+Routine: computeQpResidual
+*******************************************************************************/
 Real
 GamusinoPressureBC::computeQpResidual()
 {
@@ -46,6 +51,9 @@ GamusinoPressureBC::computeQpResidual()
   return _scaled_value * (_normals[_qp](_component) * _test[_i][_qp]);
 }
 
+/*******************************************************************************
+Routine: computeQpJacobian
+*******************************************************************************/
 Real
 GamusinoPressureBC::computeQpJacobian()
 {

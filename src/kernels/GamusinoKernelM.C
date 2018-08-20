@@ -32,6 +32,7 @@ validParams<GamusinoKernelM>()
 
 /*******************************************************************************
 Routine: GamusinoKernelM -- Constructor
+(equivalent to REDBACK StressDivergenceTensor)
 *******************************************************************************/
 GamusinoKernelM::GamusinoKernelM(const InputParameters & parameters)
   : DerivativeMaterialInterface<Kernel>(parameters),
