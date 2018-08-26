@@ -1,20 +1,19 @@
-# Isotropic Poroelasticity with Gravity - Elastic Material
-
+# Isotropic Poroelasticity with Gravity - Inelastic Material
 [Mesh]
   type = GeneratedMesh
-  displacements = 'disp_x disp_y'
-  dim = 2
+  displacements = 'disp_x disp_y disp_z'
+  dim = 3
   nx = 25
   ny = 25
-  nz = 0
-  zmax = 0
+  #nz = 0
+  #zmax = 0
   ymax = 100 # m
   xmax = 100 # m
 []
 
 [GlobalParams]
-  displacements = 'disp_x disp_y'
-  pore_pressure = pore_pressure
+  displacements = 'disp_x disp_y disp_z'
+  pore_pressure = 'pore_pressure'
 []
 
 [Variables]
@@ -30,93 +29,97 @@
     order = FIRST
     family = LAGRANGE
   [../]
+  [./disp_z]
+    order = FIRST
+    family = LAGRANGE
+  [../]
 []
 
 [Kernels]
-  [./HKernel]
+  [HKernel]
     type = GamusinoKernelH
     variable = pore_pressure
-  [../]
-  [./MKernel_x]
+  []
+  [MKernel_x]
     type = GamusinoKernelM
     variable = disp_x
     component = 0
-  [../]
-  [./MKernel_y]
+  []
+  [MKernel_y]
     type = GamusinoKernelM
     variable = disp_y
     component = 1
-  [../]
+  []
 []
 
 [AuxVariables]
-  [./strain_xx]
+  [strain_xx]
     order = CONSTANT
     family = MONOMIAL
-  [../]
-  [./strain_xy]
+  []
+  [strain_xy]
     order = CONSTANT
     family = MONOMIAL
-  [../]
-  [./strain_yy]
+  []
+  [strain_yy]
     order = CONSTANT
     family = MONOMIAL
-  [../]
-  [./stress_xx]
+  []
+  [stress_xx]
     order = CONSTANT
     family = MONOMIAL
-  [../]
-  [./stress_xy]
+  []
+  [stress_xy]
     order = CONSTANT
     family = MONOMIAL
-  [../]
-  [./stress_yy]
+  []
+  [stress_yy]
     order = CONSTANT
     family = MONOMIAL
-  [../]
-  [./porosity]
+  []
+  [porosity]
     order = CONSTANT
     family = MONOMIAL
-  [../]
+  []
 []
 
 [AuxKernels]
-  [./strain_xx]
+  [strain_xx]
     type = GamusinoStrain
     variable = strain_xx
     index_i = 0
     index_j = 0
-  [../]
-  [./strain_xy]
+  []
+  [strain_xy]
     type = GamusinoStrain
     variable = strain_xy
     index_i = 0
     index_j = 1
-  [../]
-  [./strain_yy]
+  []
+  [strain_yy]
     type = GamusinoStrain
     variable = strain_yy
     index_i = 1
     index_j = 1
-  [../]
-  [./stress_xx]
+  []
+  [stress_xx]
     type = GamusinoStress
     variable = stress_xx
     index_i = 0
     index_j = 0
-  [../]
-  [./stress_xy]
+  []
+  [stress_xy]
     type = GamusinoStress
     variable = stress_xy
     index_i = 0
     index_j = 1
-  [../]
-  [./stress_yy]
+  []
+  [stress_yy]
     type = GamusinoStress
     variable = stress_yy
     index_i = 1
     index_j = 1
-  [../]
+  []
 []
 
 [BCs]
@@ -167,47 +170,131 @@
 
 [Materials]
   [./HMMaterial]
-    type = GamusinoMaterialMElastic
-    block = 0
-    strain_model = incr_small_strain
-    has_gravity = true
-    gravity_acceleration = 9.81
-    solid_density_initial = 3058.104
-    fluid_density_initial = 1019.368
-    young_modulus = 10.0e+09
-    poisson_ratio = 0.25
-    permeability_initial = 1.0e-10
+    type = GamusinoMaterialMInelastic
+    gravity_acceleration = 9.80
     fluid_viscosity_initial = 1.0e-03
-    porosity_uo = porosity
-    fluid_density_uo = fluid_density
+    has_gravity = true
+    compute = true
     fluid_viscosity_uo = fluid_viscosity
+    inelastic_models = 'cdp cwp'
+    strain_model = incr_small_strain
+    fluid_density_initial = 1019.368
+    solid_density_initial = 3058.104
+    poisson_ratio = 0.25
+    porosity_uo = porosity
     permeability_uo = permeability
+    permeability_initial = '1.0e-10'
+    young_modulus = 10.0e+09
+    fluid_density_uo = fluid_density
+    block = '0'
+  [../]
+  [./cdp]
+    type = CappedDruckerPragerStressUpdate
+    base_name = cdp
+    DP_model = dp
+    tensile_strength = ts
+    compressive_strength = cs
+    yield_function_tol = 1E-5
+    tip_smoother = 1E3
+    smoothing_tol = 1E3
+    block = '0'
+  [../]
+  [./cwp]
+    type = CappedWeakPlaneStressUpdate
+    base_name = cwp
+    cohesion = wp_coh
+    tan_friction_angle = wp_tanphi
+    tan_dilation_angle = wp_tanpsi
+    tensile_strength = wp_t_strength
+    compressive_strength = wp_c_strength
+    tip_smoother = 1E3
+    smoothing_tol = 1E3
+    yield_function_tol = 1E-5
+    block = '0'
   [../]
 []
 
 [UserObjects]
-  [./porosity]
+  [porosity]
     type = GamusinoPorosityConstant
-  [../]
-  [./fluid_density]
+  []
+  [fluid_density]
     type = GamusinoFluidDensityConstant
-  [../]
-  [./fluid_viscosity]
+  []
+  [fluid_viscosity]
     type = GamusinoFluidViscosityConstant
-  [../]
-  [./permeability]
+  []
+  [permeability]
     type = GamusinoPermeabilityConstant
+  []
+  [cohesion]
+    type = GamusinoHardeningConstant
+  []
+  [dilation]
+    type = GamusinoHardeningConstant
+  []
+  [friction]
+    type = GamusinoHardeningConstant
+  []
+  [./ts]
+    type = TensorMechanicsHardeningConstant
+    value = 300
+  [../]
+  [./cs]
+    type = TensorMechanicsHardeningConstant
+    value = 1E4
+  [../]
+  [./mc_coh]
+    type = TensorMechanicsHardeningConstant
+    value = 1E4
+  [../]
+  [./mc_phi]
+    type = TensorMechanicsHardeningConstant
+    value = 20
+    convert_to_radians = true
+  [../]
+  [./mc_psi]
+    type = TensorMechanicsHardeningConstant
+    value = 0
+  [../]
+  [./dp]
+    type = TensorMechanicsPlasticDruckerPrager
+    mc_cohesion = mc_coh
+    mc_friction_angle = mc_phi
+    mc_dilation_angle = mc_psi
+    internal_constraint_tolerance = 1 # irrelevant here
+    yield_function_tolerance = 1      # irrelevant here
+  [../]
+  [./wp_coh]
+    type = TensorMechanicsHardeningConstant
+    value = 1E4
+  [../]
+  [./wp_tanphi]
+    type = TensorMechanicsHardeningConstant
+    value = 0.5
+  [../]
+  [./wp_tanpsi]
+    type = TensorMechanicsHardeningConstant
+    value = 0.1111077
+  [../]
+  [./wp_t_strength]
+    type = TensorMechanicsHardeningConstant
+    value = 0
+  [../]
+  [./wp_c_strength]
+    type = TensorMechanicsHardeningConstant
+    value = 1E4
   [../]
 []
 
 [Preconditioning]
-  [./precond]
+  [precond]
     type = SMP
     full = true
     petsc_options = '-snes_ksp_ew'
     petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
     petsc_options_value = 'gmres asm 1E-10 1E-10 200 500 lu NONZERO'
-  [../]
+  []
 []
 
 [Executioner]

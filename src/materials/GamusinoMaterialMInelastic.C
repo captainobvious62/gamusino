@@ -41,8 +41,9 @@ GamusinoMaterialMInelastic::GamusinoMaterialMInelastic(const InputParameters & p
     mooseError("GamusinoMaterialMInelastic: you need to use an incremental strain model!");
 
   std::vector<MaterialName> models = getParam<std::vector<MaterialName>>("inelastic_models");
-  for (unsigned int i = 0; i < models.size(); ++i)
+  for (unsigned int i = 0; i < _num_models; ++i)
   {
+    //GamusinoInelasticBase * base = dynamic_cast<GamusinoInelasticBase *>(&getMaterial(models[i]));
     GamusinoInelasticBase * base = dynamic_cast<GamusinoInelasticBase *>(&getMaterialByName(models[i]));
     if (base)
       _models.push_back(base);

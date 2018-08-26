@@ -3,8 +3,6 @@
 #include "MooseMesh.h"
 #include "GamusinoNonReflectingBC.h"
 
-registerMooseObject("GamusinoApp", GamusinoNonReflectingBC);
-
 template <>
 InputParameters
 validParams<GamusinoNonReflectingBC>()

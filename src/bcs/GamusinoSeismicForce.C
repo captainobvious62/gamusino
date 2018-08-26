@@ -3,8 +3,6 @@
 #include "MooseMesh.h"
 #include "GamusinoSeismicForce.h"
 
-registerMooseObject("GamusinoApp", GamusinoSeismicForce);
-
 template <>
 InputParameters
 validParams<GamusinoSeismicForce>()
