@@ -1,26 +1,22 @@
-# Isotropic Poroelasticity with Gravity - Inelastic Material
 [Mesh]
   type = GeneratedMesh
-  displacements = 'disp_x disp_y'
-  dim = 2
-  nx = 25
-  ny = 25
-  #nz = 0
-  #zmax = 0
-  ymax = 100 # m
-  xmax = 100 # m
+  dim = 3
+  nx = 10
+  ny = 10
+  nz = 10
+  xmin = 0
+  xmax = 1
+  ymin = 0
+  ymax = 1
+  zmin = 0
+  zmax = 1
 []
 
 [GlobalParams]
-  displacements = 'disp_x disp_y'
-  pore_pressure = 'pore_pressure'
+  displacements = 'disp_x disp_y disp_z'
 []
 
 [Variables]
-  [./pore_pressure]
-    order = FIRST
-    family = LAGRANGE
-  [../]
   [./disp_x]
     order = FIRST
     family = LAGRANGE
@@ -29,13 +25,13 @@
     order = FIRST
     family = LAGRANGE
   [../]
+  [./disp_z]
+    order = FIRST
+    family = LAGRANGE
+  [../]
 []
 
 [Kernels]
-  [./HKernel]
-    type = GamusinoKernelH
-    variable = pore_pressure
-  [../]
   [./MKernel_x]
     type = GamusinoKernelM
     variable = disp_x
@@ -46,6 +42,11 @@
     variable = disp_y
     component = 1
   [../]
+  [./MKernel_z]
+    type = GamusinoKernelM
+    variable = disp_z
+    component = 2
+  [../]
 []
 
 [AuxVariables]
@@ -53,27 +54,11 @@
     order = CONSTANT
     family = MONOMIAL
   [../]
-  [./strain_xy]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
-  [./strain_yy]
+  [./plastic_strain_xx]
     order = CONSTANT
     family = MONOMIAL
   [../]
   [./stress_xx]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
-  [./stress_xy]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
-  [./stress_yy]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
-  [./porosity]
     order = CONSTANT
     family = MONOMIAL
   [../]
@@ -90,35 +75,18 @@
     index_i = 0
     index_j = 0
   [../]
-  [./strain_xy]
+  [./plastic_strain_xx]
     type = GamusinoStrain
-    variable = strain_xy
+    strain_type = plastic
+    variable = plastic_strain_xx
     index_i = 0
-    index_j = 1
-  [../]
-  [./strain_yy]
-    type = GamusinoStrain
-    variable = strain_yy
-    index_i = 1
-    index_j = 1
+    index_j = 0
   [../]
   [./stress_xx]
     type = GamusinoStress
     variable = stress_xx
     index_i = 0
     index_j = 0
-  [../]
-  [./stress_xy]
-    type = GamusinoStress
-    variable = stress_xy
-    index_i = 0
-    index_j = 1
-  [../]
-  [./stress_yy]
-    type = GamusinoStress
-    variable = stress_yy
-    index_i = 1
-    index_j = 1
   [../]
   [./yield]
     type = MaterialRealAux
@@ -128,48 +96,29 @@
 []
 
 [BCs]
-  inactive = 'roller_xmin roller_xmax'
-  [./roller_xmin]
-    type = DirichletBC
+  [./no_x_left]
+    type = PresetBC
     variable = disp_x
-    boundary = 'left'
-    value = 0.0 # m
+    boundary = left
+    value = 0.0
   [../]
-  [./roller_xmax]
-    type = DirichletBC
+  [./load_x_right]
+    type = GamusinoVelocityBC
     variable = disp_x
-    boundary = 'right'
-    value = 0.0 # m
+    boundary = right
+    velocity = -1.0e-05
   [../]
-  [./roller_ymin]
-    type = DirichletBC
+  [./no_y]
+    type = PresetBC
     variable = disp_y
-    boundary = 'bottom'
-    value = 0.0 # m
-  [../]
-  [./ymax_drained]
-    type = DirichletBC
-    variable = pore_pressure
-    boundary = 'top'
-    value = 0.0 # Pa
-  [../]
-  [./noflow_xmin]
-    type = NeumannBC
-    variable = pore_pressure
-    boundary = 'left'
+    boundary = 'bottom top'
     value = 0.0
   [../]
-  [./noflow_xmax]
-    type = NeumannBC
-    variable = pore_pressure
-    boundary = 'right'
+  [./no_z_back]
+    type = PresetBC
+    variable = disp_z
+    boundary = 'back front'
     value = 0.0
-  [../]
-  [./noflow_ymin]
-    type = NeumannBC
-    variable = pore_pressure
-    boundary = 'bottom'
-    value = 0
   [../]
 []
 
@@ -181,22 +130,14 @@
     MC_dilation = DP_dilation
     yield_function_tol = 1.0e-08
   [../]
-  [./HMMaterial]
+  [./MMaterial]
     type = GamusinoMaterialMInelastic
-    gravity_acceleration = 9.80
-    fluid_viscosity_initial = 1.0e-03
-    has_gravity = true
-#    compute = true
-    fluid_viscosity_uo = fluid_viscosity
-    inelastic_models = 'DP'
+    block = 0
     strain_model = incr_small_strain
-    fluid_density_initial = 1019.368
-    solid_density_initial = 3058.104
-    poisson_ratio = 0.25
+    bulk_modulus = 2.0e+03
+    shear_modulus = 2.0e+03
+    inelastic_models = 'DP'
     porosity_uo = porosity
-    permeability_uo = permeability
-    permeability_initial = '1.0e-10'
-    young_modulus = 10.0e+09
     fluid_density_uo = fluid_density
   [../]
 []
@@ -208,25 +149,43 @@
   [./fluid_density]
     type = GamusinoFluidDensityConstant
   [../]
-  [./fluid_viscosity]
-    type = GamusinoFluidViscosityConstant
-  [../]
-  [./permeability]
-    type = GamusinoPermeabilityConstant
-  [../]
   [./DP_cohesion]
     type = GamusinoHardeningConstant
     value = 1.0
   [../]
   [./DP_friction]
     type = GamusinoHardeningConstant
-    value = 40.0
+    value = 10.0
     convert_to_radians = true
   [../]
   [./DP_dilation]
     type = GamusinoHardeningConstant
-    value = 40.0
+    value = 10.0
     convert_to_radians = true
+  [../]
+[]
+
+[Postprocessors]
+  [./u_x]
+    type = SideAverageValue
+    variable = disp_x
+    boundary = right
+    outputs = csv
+  [../]
+  [./S_xx]
+    type = ElementAverageValue
+    variable = stress_xx
+    outputs = csv
+  [../]
+  [./E_xx]
+    type = ElementAverageValue
+    variable = strain_xx
+    outputs = csv
+  [../]
+  [./Ep_xx]
+    type = ElementAverageValue
+    variable = plastic_strain_xx
+    outputs = csv
   [../]
 []
 
@@ -245,12 +204,13 @@
   solve_type = Newton
   start_time = 0.0
   end_time = 200.0
-  dt = 1.0
+  dt = 4.0
 []
 
 [Outputs]
   execute_on = 'timestep_end'
   print_linear_residuals = true
-  print_perf_log = true
+  perf_graph = true
   exodus = true
+  csv = true
 []
