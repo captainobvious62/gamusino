@@ -39,6 +39,7 @@
 
 // Kernels
 #include "DynamicDarcyFlow.h"
+#include "GamusinoInertialForce.h"
 #include "GamusinoKernelH.h"
 #include "GamusinoKernelHPoroElastic.h"
 #include "GamusinoKernelM.h"
@@ -145,12 +146,8 @@ GamusinoApp::registerObjects(Factory & factory)
   registerMaterial(GamusinoDruckerPrager);
 
   // Kernels
-  registerKernel(PoreFluidInertialForceCoupling);
   registerKernel(DynamicDarcyFlow);
-  registerKernel(MassConservationNewmark);
-  registerKernel(GamusinoMSEnergyTimeDerivative);
-  registerKernel(GamusinoMSEnergyResidual);
-  registerKernel(GamusinoMSMassResidual);
+  registerKernel(GamusinoInertialForce);
   registerKernel(GamusinoKernelTimeH);
   registerKernel(GamusinoKernelTimeT);
   registerKernel(GamusinoKernelH);
@@ -158,6 +155,11 @@ GamusinoApp::registerObjects(Factory & factory)
   registerKernel(GamusinoKernelTH);
   registerKernel(GamusinoKernelM);
   registerKernel(GamusinoKernelHPoroElastic);
+  registerKernel(GamusinoMSEnergyTimeDerivative);
+  registerKernel(GamusinoMSEnergyResidual);
+  registerKernel(GamusinoMSMassResidual);
+  registerKernel(MassConservationNewmark);
+  registerKernel(PoreFluidInertialForceCoupling);
 
   // AuxKernels
   registerAux(NewmarkPoreFluidAccelAux);

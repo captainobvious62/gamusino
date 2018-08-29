@@ -1,4 +1,4 @@
-#include "GamusinoMaterialBase.h"
+ #include "GamusinoMaterialBase.h"
 #include "MooseMesh.h"
 #include <cfloat>
 
@@ -103,6 +103,7 @@ GamusinoMaterialBase::GamusinoMaterialBase(const InputParameters & parameters)
     _porosity(declareProperty<Real>("porosity")),
     _fluid_density(declareProperty<Real>("fluid_density")),
     _fluid_viscosity(declareProperty<Real>("fluid_viscosity"))
+    _bulk_density(declareProperty<real>("bulk_density"))
 {
   if (_has_scaled_properties)
   {
