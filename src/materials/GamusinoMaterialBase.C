@@ -102,8 +102,8 @@ GamusinoMaterialBase::GamusinoMaterialBase(const InputParameters & parameters)
     _scaling_factor(declareProperty<Real>("scaling_factor")),
     _porosity(declareProperty<Real>("porosity")),
     _fluid_density(declareProperty<Real>("fluid_density")),
-    _fluid_viscosity(declareProperty<Real>("fluid_viscosity"))
-    _bulk_density(declareProperty<real>("bulk_density"))
+    _fluid_viscosity(declareProperty<Real>("fluid_viscosity")),
+    _bulk_density(declareProperty<Real>("bulk_density"))
 {
   if (_has_scaled_properties)
   {

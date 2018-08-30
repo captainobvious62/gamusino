@@ -72,8 +72,8 @@ protected:
   MaterialProperty<Real> & _scaling_factor;
   MaterialProperty<Real> & _porosity;
   MaterialProperty<Real> & _fluid_density;
+  MaterialProperty<Real> & _fluid_viscosity;  
   MaterialProperty<Real> & _bulk_density;
-  MaterialProperty<Real> & _fluid_viscosity;
   RealVectorValue _gravity;
   RankTwoTensor _rotation_matrix;
 };

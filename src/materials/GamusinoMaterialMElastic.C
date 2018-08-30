@@ -797,7 +797,7 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesHM()
       _permeability_uo->computedPermeabilitydpf(_k0, _phi0, _porosity[_qp], (*_dphi_dpf)[_qp]);
 
   // Bulk Density
-  _bulk_density[_qp] = _porosity[_qp] * _fluid_density[_qp] + (1.0 - _porosity[_qp]) * rho0_s;
+  _bulk_density[_qp] = _porosity[_qp] * _fluid_density[_qp] + (1.0 - _porosity[_qp]) * _rho0_s;
 }
 
 /*******************************************************************************
@@ -860,7 +860,7 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesTM()
   _porosity[_qp] = _porosity_uo->computePorosity(_porosity_old[_qp], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
   // Bulk Density
-  _bulk_density[_qp] = _porosity[_qp] * _fluid_density[_qp] + (1.0 - _porosity[_qp]) * rho0_s;
+  _bulk_density[_qp] = _porosity[_qp] * _fluid_density[_qp] + (1.0 - _porosity[_qp]) * _rho0_s;
 }
 
 /*******************************************************************************
@@ -954,7 +954,7 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesTHM()
       _permeability_uo->computedPermeabilitydT(_k0, _phi0, _porosity[_qp], (*_dphi_dT)[_qp]);
 
   // Bulk Density
-  _bulk_density[_qp] = _porosity[_qp] * _fluid_density[_qp] + (1.0 - _porosity[_qp]) * rho0_s;
+  _bulk_density[_qp] = _porosity[_qp] * _fluid_density[_qp] + (1.0 - _porosity[_qp]) * _rho0_s;
 }
 
 /*******************************************************************************
@@ -1081,7 +1081,7 @@ GamusinoMaterialMElastic::GamusinoMatPropertiesM()
   // Porosity
   _porosity[_qp] = _porosity_uo->computePorosity(_porosity_old[_qp], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
   // Bulk Density
-  _bulk_density[_qp] = _porosity[_qp] * _fluid_density[_qp] + (1.0 - _porosity[_qp]) * rho0_s;
+  _bulk_density[_qp] = _porosity[_qp] * _fluid_density[_qp] + (1.0 - _porosity[_qp]) * _rho0_s;
 }
 
 /*******************************************************************************
