@@ -144,6 +144,12 @@
     boundary = 'Surface'
     value = 0.0 # Pa
   []
+  [FormationSourceP]
+    type = FunctionPresetBC
+    variable = pore_pressure
+    boundary = 'FormationWest'
+    function = ''if(t<=6*3600*24,101325-z*9800+30E6*t/6.0/3600.0/24.0,101325-z*9800)''
+  []
 []
 
 [Materials]

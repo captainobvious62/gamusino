@@ -78,22 +78,6 @@
     order = CONSTANT
     family = MONOMIAL
   []
-  [plastic_strain_xx]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  [plastic_strain_xy]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  [plastic_strain_yy]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  [yield]
-    order = CONSTANT
-    family = MONOMIAL
-  []
 []
 
 [AuxKernels]
@@ -133,32 +117,6 @@
     index_i = 1
     index_j = 1
   []
-  [plastic_strain_xx]
-    type = GamusinoStrain
-    strain_type = plastic
-    variable = plastic_strain_xx
-    index_i = 0
-    index_j = 0
-  []
-  [plastic_strain_xy]
-    type = GamusinoStrain
-    strain_type = plastic
-    variable = plastic_strain_xy
-    index_i = 0
-    index_j = 1
-  []
-  [plastic_strain_yy]
-    type = GamusinoStrain
-    strain_type = plastic
-    variable = plastic_strain_yy
-    index_i = 1
-    index_j = 1
-  []
-  [yield]
-    type = MaterialRealAux
-    variable = yield
-    property = plastic_yield_function
-  []
 []
 
 [BCs]
@@ -186,19 +144,84 @@
     boundary = 'Surface'
     value = 0.0 # Pa
   []
+  [FormationSourceP]
+    type = FunctionPresetBC
+    variable = pore_pressure
+    boundary = 'FormationWest'
+    function = 'if(t<=6*3600*24,101325-z*9800+30E6*t/6.0/3600.0/24.0,101325-z*9800)'
+  []
 []
 
 [Materials]
-  [DP]
-    type = GamusinoDruckerPrager
-    MC_cohesion = DP_cohesion
-    MC_friction = DP_friction
-    MC_dilation = DP_dilation
-    yield_function_tol = 1.0e-08
-    max_NR_iterations = 50
-  []
-  [HMMaterial_E]
+  [Basement]
     type = GamusinoMaterialMElastic
+    block = 'EastBasement WestBasement'
+    strain_model = incr_small_strain
+    has_gravity = true
+    gravity_acceleration = 9.81 # m/s**2
+    solid_density_initial = 3000.0 # kg/m**3
+    fluid_density_initial = 1000.0 # kg/m**3
+    young_modulus = 10.0e+09 # Pa
+    poisson_ratio = 0.25
+    permeability_initial = '1.0e-20' # m**2
+    fluid_viscosity_initial = 0.002 # Pa*s
+    porosity_initial = 0.01
+    porosity_uo = porosity
+    fluid_density_uo = fluid_density
+    fluid_viscosity_uo = fluid_viscosity
+    scaling_factor_initial = 1.0 # m
+    scaling_uo = scaling
+    permeability_uo = permeability
+    solid_bulk_modulus = 0.7e8 # Pa
+    fluid_modulus = 2.3e9 # Pa
+  []
+  [Mudstone]
+    type = GamusinoMaterialMElastic
+    block = 'mudrock'
+    strain_model = incr_small_strain
+    has_gravity = true
+    gravity_acceleration = 9.81 # m/s**2
+    solid_density_initial = 2650.0 # kg/m**3
+    fluid_density_initial = 1000.0 # kg/m**3
+    young_modulus = 10.0e+09 # Pa
+    poisson_ratio = 0.25
+    permeability_initial = '1.0e-20' # m**2
+    fluid_viscosity_initial = 3e-4 # Pa*s
+    porosity_initial = 0.01
+    porosity_uo = porosity
+    fluid_density_uo = fluid_density
+    fluid_viscosity_uo = fluid_viscosity
+    scaling_factor_initial = 1.0 # m
+    scaling_uo = scaling
+    permeability_uo = permeability
+    solid_bulk_modulus = 0.7e8 # Pa
+    fluid_modulus = 1e8 # Pa
+  []
+  [Formation]
+    type = GamusinoMaterialMElastic
+    block = 'formation'
+    strain_model = incr_small_strain
+    has_gravity = true
+    gravity_acceleration = 9.81 # m/s**2
+    solid_density_initial = 2650.0 # kg/m**3
+    fluid_density_initial = 1000.0 # kg/m**3
+    young_modulus = 10.0e+09 # Pa
+    poisson_ratio = 0.25
+    permeability_initial = '1.28e-15' # m**2
+    fluid_viscosity_initial = 0.002 # Pa*s
+    porosity_initial = 0.15
+    porosity_uo = porosity
+    fluid_density_uo = fluid_density
+    fluid_viscosity_uo = fluid_viscosity
+    scaling_factor_initial = 1.0 # m
+    scaling_uo = scaling
+    permeability_uo = permeability
+    solid_bulk_modulus = 0.7e8 # Pa
+    fluid_modulus = 1.5e9 # Pa
+  []
+  [FZ1]
+    type = GamusinoMaterialMElastic
+    block = 'FZ1'
     strain_model = incr_small_strain
     has_gravity = true
     gravity_acceleration = 9.81 # m/s**2
@@ -217,30 +240,50 @@
     permeability_uo = permeability
     solid_bulk_modulus = 0.7e8 # Pa
     fluid_modulus = 2.3e9 # Pa
-    block = 'EastBasement WestBasement mudrock formation'
   []
-  [HMMaterial_IE]
-    type = GamusinoMaterialMInelastic
+  [FZ2]
+    type = GamusinoMaterialMElastic
+    gravity_acceleration = 9.81
     scaling_uo = scaling
     fluid_viscosity_initial = 0.002
     has_gravity = true
     solid_bulk_modulus = 0.7e8
     fluid_viscosity_uo = fluid_viscosity
-    inelastic_models = 'DP'
     strain_model = incr_small_strain
     fluid_density_initial = 1000.0
-    solid_density_initial = 2600.0
     scaling_factor_initial = 1.0
     poisson_ratio = 0.25
     porosity_uo = porosity
     permeability_uo = permeability
-    permeability_initial = '1.0e-19'
+    permeability_initial = '1.0e-15'
     young_modulus = 10.0e+09
-    porosity_initial = 0.05
+    porosity_initial = 0.10
     fluid_modulus = 2.3e9
     fluid_density_uo = fluid_density
-    block = 'FZ1 FZ2 FZ3'
-    max_iterations = 50
+    solid_density_initial = 2600.0
+    block = 'FZ2'
+  []
+  [FZ3]
+    type = GamusinoMaterialMElastic
+    gravity_acceleration = 9.81
+    scaling_uo = scaling
+    fluid_viscosity_initial = 0.002
+    has_gravity = true
+    solid_bulk_modulus = 0.7e8
+    fluid_viscosity_uo = fluid_viscosity
+    strain_model = incr_small_strain
+    fluid_density_initial = 1000.0
+    scaling_factor_initial = 1.0
+    poisson_ratio = 0.25
+    porosity_uo = porosity
+    permeability_uo = permeability
+    permeability_initial = '1.0e-15'
+    young_modulus = 10.0e+09
+    porosity_initial = 0.10
+    fluid_modulus = 2.3e9
+    fluid_density_uo = fluid_density
+    solid_density_initial = 2600.0
+    block = 'FZ3'
   []
 []
 
@@ -262,32 +305,12 @@
     characteristic_time = 1.0 # sec
     characteristic_length = 1.0 # m
     characteristic_temperature = 1.0 # K
-    characteristic_stress = 1E6 # Pa
-  []
-  [Franco]
-    type = PorousFlowDictator
-    porous_flow_vars = 'pore_pressure disp_x disp_y'
-    number_fluid_phases = 1
-    number_fluid_components = 1
-  []
-  [DP_cohesion]
-    type = GamusinoHardeningConstant
-    value = 1.0
-  []
-  [DP_friction]
-    type = GamusinoHardeningConstant
-    convert_to_radians = true
-    value = 10.0
-  []
-  [DP_dilation]
-    type = GamusinoHardeningConstant
-    convert_to_radians = true
-    value = 10.0
+    characteristic_stress = 1e6 # Pa
   []
 []
 
 [Preconditioning]
-  inactive = 'hypre mine'
+  inactive = 'precond hypre'
   [precond]
     type = SMP
     full = true
@@ -334,8 +357,8 @@
   l_max_its = 200
   nl_max_its = 30
   start_time = 0.0
-  end_time = 864000 # sec
-  dt = 21600 # sec
+  end_time = 8640000 # sec
+  dt = 21000 # sec
   verbose = true
 []
 
@@ -344,4 +367,25 @@
   print_linear_residuals = true
   print_perf_log = true
   exodus = true
+[]
+
+[Adaptivity]
+  initial_steps = 1
+  recompute_markers_during_cycles = true
+  marker = porepressure_grad_marker
+  initial_marker = porepressure_grad_marker
+  [Indicators]
+    [porepressure_grad_indicator]
+      type = GradientJumpIndicator
+      variable = pore_pressure
+    []
+  []
+  [Markers]
+    [porepressure_grad_marker]
+      type = ErrorFractionMarker
+      indicator = porepressure_grad_indicator
+      coarsen = 0.2
+      refine = 0.1
+    []
+  []
 []
