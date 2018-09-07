@@ -1,24 +1,3 @@
-# Same as pp_generation.i, but using an Action
-#
-# A sample is constrained on all sides and its boundaries are
-# also impermeable.  Fluid is pumped into the sample via a
-# volumetric source (ie kg/second per cubic meter), and the
-# rise in porepressure is observed.
-#
-# Source = s  (units = kg/m^3/second)
-#
-# Expect:
-# fluid_mass = mass0 + s*t
-# stress = 0 (remember this is effective stress)
-# Porepressure = fluid_bulk*log(fluid_mass_density/density_P0), where fluid_mass_density = fluid_mass*porosity
-# porosity = biot+(phi0-biot)*exp(pp(biot-1)/solid_bulk)
-#
-# Parameters:
-# Biot coefficient = 0.3
-# Phi0 = 0.1
-# Solid Bulk modulus = 2
-# fluid_bulk = 13
-# density_P0 = 1
 inactive = 'PorousFlowFullySaturated Postprocessors PorousFlowBasicTHM'
 [Mesh]
   type = FileMesh
@@ -32,17 +11,15 @@ inactive = 'PorousFlowFullySaturated Postprocessors PorousFlowBasicTHM'
   PorousFlowDictator = 'Pinochet'
   block = '1 2'
   biot_coefficient = '0.9'
-  gravity = '0 -9.8 0' # m/s**2
+  gravity = '0 0 0' # m/s**2
 []
 
 [Variables]
   [disp_x]
     # displacement is in meters
-    scaling = 1E-6
   []
   [disp_y]
     # displacement is in meters
-    scaling = 1E-6
   []
   [porepressure]
     # Pressure is in pascals
@@ -76,6 +53,7 @@ inactive = 'PorousFlowFullySaturated Postprocessors PorousFlowBasicTHM'
 []
 
 [BCs]
+  inactive = 'drained_ymax'
   [roller_xmax]
     type = PresetBC
     variable = disp_x
@@ -118,9 +96,22 @@ inactive = 'PorousFlowFullySaturated Postprocessors PorousFlowBasicTHM'
     boundary = 'bottom'
     value = 0
   []
+  [roller_ymax]
+    type = PresetBC
+    variable = disp_y
+    boundary = 'surface'
+    value = 0
+  []
+  [noflow_ymax]
+    type = DirichletBC
+    variable = porepressure
+    boundary = 'surface'
+    value = 0
+  []
 []
 
 [Kernels]
+  inactive = 'gravity'
   [grad_stress_x]
     type = StressDivergenceTensors
     component = 0
@@ -323,11 +314,9 @@ inactive = 'PorousFlowFullySaturated Postprocessors PorousFlowBasicTHM'
   verbose = true
   nl_abs_tol = 1e-8
   nl_rel_tol = 1e-8
-  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package '
   line_search = bt
   l_max_its = 10000
-  petsc_options_value = 'lu mumps'
-  petsc_options = '-info -snes_monitor -ksp_monitor_true_residual -snes_converged_reason -ksp_converged_reason'
+  petsc_options = '-info -snes_monitor -ksp_monitor_true_residual -snes_converged_reason -dm_moose_print_embedding -ksp_converged_reason'
   nl_max_its = 500
   contact_line_search_allowed_lambda_cuts = 5
   nl_abs_step_tol = 1e-8
