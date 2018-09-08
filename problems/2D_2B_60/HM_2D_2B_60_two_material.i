@@ -1,28 +1,31 @@
-inactive = 'Modules'
 [Mesh]
   type = FileMesh
-  file = Segall2D.exo
+  #uniform_refine = 1
+  file = 60dipmodif_modified.exo
   dim = 2
 []
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
   pore_pressure = 'pore_pressure'
-  gravity_acceleration = '0.0'
+#  block = '1 2'
 []
 
 [Variables]
   [pore_pressure]
     order = FIRST
     family = LAGRANGE
+    block = '1 2'
   []
   [disp_x]
     order = FIRST
     family = LAGRANGE
+    block = '1 2'  
   []
   [disp_y]
     order = FIRST
     family = LAGRANGE
+    block = '1 2'
   []
 []
 
@@ -30,24 +33,29 @@ inactive = 'Modules'
   [HKernel]
     type = GamusinoKernelH
     variable = pore_pressure
+    block = '1 2'
   []
   [MKernel_x]
     type = GamusinoKernelM
     variable = disp_x
     component = 0
+    block = '1 2'
   []
   [MKernel_y]
     type = GamusinoKernelM
     variable = disp_y
     component = 1
+    block = '1 2'
   []
   [HMKernel]
     type = GamusinoKernelHPoroElastic
     variable = pore_pressure
+    block = '1 2'
   []
   [p_time]
     type = GamusinoKernelTimeH
     variable = pore_pressure
+    block = '1 2'
   []
 []
 
@@ -55,159 +63,173 @@ inactive = 'Modules'
   [strain_xx]
     order = CONSTANT
     family = MONOMIAL
+    block = '1 2'
   []
   [strain_xy]
     order = CONSTANT
     family = MONOMIAL
+    block = '1 2'
   []
   [strain_yy]
     order = CONSTANT
     family = MONOMIAL
+    block = '1 2'
   []
   [stress_xx]
     order = CONSTANT
     family = MONOMIAL
+    block = '1 2'
   []
   [stress_xy]
     order = CONSTANT
     family = MONOMIAL
+    block = '1 2'
   []
   [stress_yy]
     order = CONSTANT
     family = MONOMIAL
+    block = '1 2'
   []
   [porosity]
     order = CONSTANT
     family = MONOMIAL
+    block = '1 2'
+  []
+  [fluid_viscosity]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [fluid_density]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [permeability]
+    family = MONOMIAL
+    order = CONSTANT
   []
 []
 
 [AuxKernels]
+  inactive = 'permeability'
   [strain_xx]
     type = GamusinoStrain
     variable = strain_xx
     index_i = 0
     index_j = 0
+    block = '1 2'
   []
   [strain_xy]
     type = GamusinoStrain
     variable = strain_xy
     index_i = 0
     index_j = 1
+    block = '1 2'
   []
   [strain_yy]
     type = GamusinoStrain
     variable = strain_yy
     index_i = 1
     index_j = 1
+    block = '1 2'
   []
   [stress_xx]
     type = GamusinoStress
     variable = stress_xx
     index_i = 0
     index_j = 0
+    block = '1 2'
   []
   [stress_xy]
     type = GamusinoStress
     variable = stress_xy
     index_i = 0
     index_j = 1
+    block = '1 2'
   []
   [stress_yy]
     type = GamusinoStress
     variable = stress_yy
     index_i = 1
     index_j = 1
+    block = '1 2'
+  []
+  [porosity]
+    type = MaterialRealAux
+    variable = porosity
+    property = porosity
+  []
+  [fluid_viscosity]
+    type = MaterialRealAux
+    variable = fluid_viscosity
+    property = fluid_viscosity
+  []
+  [fluid_density]
+    type = MaterialRealAux
+    variable = fluid_density
+    property = fluid_density
+  []
+  [permeability]
+    type = MaterialRealAux
+    variable = permeability
+    property = permeability
   []
 []
 
 [BCs]
-  inactive = 'FormationSourceP'
   [roller_xmin]
     type = DirichletBC
     variable = disp_x
-    boundary = 'MudrockWest FormationWest BasementWest'
+    boundary = 'left_top left_base'
     value = 0.0 # m
   []
   [roller_xmax]
     type = DirichletBC
     variable = disp_x
-    boundary = 'MudrockEast FormationEast BasementEast'
+    boundary = 'right_top right_base'
     value = 0.0 # m
   []
   [roller_ymin]
     type = DirichletBC
     variable = disp_y
-    boundary = 'Floor'
+    boundary = 'bottom'
     value = 0.0 # m
   []
-  [ymax_drained]
+  [roller_ymax]
     type = DirichletBC
-    variable = pore_pressure
-    boundary = 'Surface'
-    value = 0.0 # Pa
+    variable = disp_y
+    boundary = 'surface'
+    value = 0.0 # m
   []
-  [FormationSourceP]
-    type = FunctionPresetBC
+#  [ymax_drained]
+#    type = DirichletBC
+#    variable = pore_pressure
+#    boundary = 'surface'
+#    value = 689475.73 # Pa ~ 100 psi
+#  []
+  [injection]
+    type = DirichletBC
+#    type = GamusinoPressureBC
     variable = pore_pressure
-    boundary = 'FormationWest'
-    function = 13789515 # if(t<=6*3600*24,101325-z*9800+30E6*t/6.0/3600.0/24.0,101325-z*9800)
+#    component = 0
+    boundary = 'left_top'
+#    scaling_uo = scaling
+    value = 2068427.2 # Pa ~ 100 psi
   []
+
 []
 
 [Materials]
-  [Basement]
+  [HMMaterial_Top]
+    block = 2
     type = GamusinoMaterialMElastic
-    block = 'EastBasement WestBasement'
     strain_model = incr_small_strain
-    has_gravity = true
-    solid_density_initial = 3000.0 # kg/m**3
+    has_gravity = false
+    gravity_acceleration = 9.81 # m/s**2
+    solid_density_initial = 2500.0 # kg/m**3
     fluid_density_initial = 1000.0 # kg/m**3
     young_modulus = 10.0e+09 # Pa
-    poisson_ratio = 0.25
-    permeability_initial = '1.0e-20' # m**2
-    fluid_viscosity_initial = 0.002 # Pa*s
-    porosity_initial = 0.01
-    porosity_uo = porosity
-    fluid_density_uo = fluid_density
-    fluid_viscosity_uo = fluid_viscosity
-    scaling_factor_initial = 1.0 # m
-    scaling_uo = scaling
-    permeability_uo = permeability
-    solid_bulk_modulus = 0.7e8 # Pa
-    fluid_modulus = 2.3e9 # Pa
-  []
-  [Mudstone]
-    type = GamusinoMaterialMElastic
-    block = 'mudrock'
-    strain_model = incr_small_strain
-    has_gravity = true
-    solid_density_initial = 2650.0 # kg/m**3
-    fluid_density_initial = 1000.0 # kg/m**3
-    young_modulus = 10.0e+09 # Pa
-    poisson_ratio = 0.25
-    permeability_initial = '1.0e-20' # m**2
-    fluid_viscosity_initial = 3e-4 # Pa*s
-    porosity_initial = 0.05
-    porosity_uo = porosity
-    fluid_density_uo = fluid_density
-    fluid_viscosity_uo = fluid_viscosity
-    scaling_factor_initial = 1.0 # m
-    scaling_uo = scaling
-    permeability_uo = permeability
-    solid_bulk_modulus = 0.7e8 # Pa
-    fluid_modulus = 1e8 # Pa
-  []
-  [Formation]
-    type = GamusinoMaterialMElastic
-    block = 'formation'
-    strain_model = incr_small_strain
-    has_gravity = true
-    solid_density_initial = 2650.0 # kg/m**3
-    fluid_density_initial = 1000.0 # kg/m**3
-    young_modulus = 10.0e+09 # Pa
-    poisson_ratio = 0.25
-    permeability_initial = '1.28e-15' # m**2
+    poisson_ratio = 0.2
+    permeability_initial = '1.0e-15' # m**2
     fluid_viscosity_initial = 0.002 # Pa*s
     porosity_initial = 0.15
     porosity_uo = porosity
@@ -217,20 +239,22 @@ inactive = 'Modules'
     scaling_uo = scaling
     permeability_uo = permeability
     solid_bulk_modulus = 0.7e8 # Pa
-    fluid_modulus = 1.5e9 # Pa
+    fluid_modulus = 2.3e9 # Pa
   []
-  [FZ1]
+
+  [HMMaterial_Bottom]
+    block = 1
     type = GamusinoMaterialMElastic
-    block = 'FZ1'
     strain_model = incr_small_strain
-    has_gravity = true
-    solid_density_initial = 2200.0 # kg/m**3
+    has_gravity = false
+    gravity_acceleration = 9.81 # m/s**2
+    solid_density_initial = 3000.0 # kg/m**3
     fluid_density_initial = 1000.0 # kg/m**3
-    young_modulus = 10.0e+09 # Pa
+    young_modulus = 11.0e+09 # Pa
     poisson_ratio = 0.25
-    permeability_initial = '1.0e-13' # m**2
+    permeability_initial = '1.0e-20' # m**2
     fluid_viscosity_initial = 0.002 # Pa*s
-    porosity_initial = 0.2
+    porosity_initial = 0.05
     porosity_uo = porosity
     fluid_density_uo = fluid_density
     fluid_viscosity_uo = fluid_viscosity
@@ -239,48 +263,6 @@ inactive = 'Modules'
     permeability_uo = permeability
     solid_bulk_modulus = 0.7e8 # Pa
     fluid_modulus = 2.3e9 # Pa
-  []
-  [FZ2]
-    type = GamusinoMaterialMElastic
-    scaling_uo = scaling
-    fluid_viscosity_initial = 0.002
-    has_gravity = true
-    solid_bulk_modulus = 0.7e8
-    fluid_viscosity_uo = fluid_viscosity
-    strain_model = incr_small_strain
-    fluid_density_initial = 1000.0
-    scaling_factor_initial = 1.0
-    poisson_ratio = 0.25
-    porosity_uo = porosity
-    permeability_uo = permeability
-    permeability_initial = '1.0e-13'
-    young_modulus = 10.0e+09
-    porosity_initial = 0.2
-    fluid_modulus = 2.3e9
-    fluid_density_uo = fluid_density
-    solid_density_initial = 2200.0
-    block = 'FZ2'
-  []
-  [FZ3]
-    type = GamusinoMaterialMElastic
-    scaling_uo = scaling
-    fluid_viscosity_initial = 0.002
-    has_gravity = true
-    solid_bulk_modulus = 0.7e8
-    fluid_viscosity_uo = fluid_viscosity
-    strain_model = incr_small_strain
-    fluid_density_initial = 1000.0
-    scaling_factor_initial = 1.0
-    poisson_ratio = 0.25
-    porosity_uo = porosity
-    permeability_uo = permeability
-    permeability_initial = '1.0e-13'
-    young_modulus = 10.0e+09
-    porosity_initial = 0.2
-    fluid_modulus = 2.3e9
-    fluid_density_uo = fluid_density
-    solid_density_initial = 2300.0
-    block = 'FZ3'
   []
 []
 
@@ -300,14 +282,14 @@ inactive = 'Modules'
   [scaling]
     type = GamusinoScaling
     characteristic_time = 1.0 # sec
-    characteristic_length = 1.0 # m
+    characteristic_length = 1 # m
     characteristic_temperature = 1.0 # K
-    characteristic_stress = 1e6 # Pa
+    characteristic_stress = 1E6 # Pa
   []
 []
 
 [Preconditioning]
-  inactive = 'hypre mine'
+  inactive ='mine hypre' 
   [precond]
     type = SMP
     full = true
@@ -338,24 +320,24 @@ inactive = 'Modules'
 [Executioner]
   # best overall
   # best if you don't have mumps:
-  # petsc_options_iname = '-pc_type -pc_asm_overlap -sub_pc_type -ksp_type -ksp_gmres_restart'
-  # petsc_options_value = ' asm      2              lu            gmres     200'
+  petsc_options_iname = '-pc_type -pc_asm_overlap -sub_pc_type -ksp_type -ksp_gmres_restart'
+  petsc_options_value = ' asm      3              ilu            gmres     500'
   # very basic:
   # petsc_options_iname = '-pc_type -ksp_type -ksp_gmres_restart'
   # petsc_options_value = ' bjacobi  gmres     200'
   type = Transient
   solve_type = NEWTON
   petsc_options = '-snes_converged_reason'
-  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
-  petsc_options_value = ' lu       mumps'
+  #petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  #petsc_options_value = ' lu       mumps'
   line_search = bt
   nl_abs_tol = 1e-3
   nl_rel_tol = 1e-5
   l_max_its = 200
   nl_max_its = 30
   start_time = 0.0
-  end_time = 86400000 # sec
-  dt = 86400.0 # sec
+  end_time = 8640000 # sec
+  dt = 86400 # sec
   verbose = true
 []
 
@@ -364,8 +346,8 @@ inactive = 'Modules'
   print_linear_residuals = true
   print_perf_log = true
   exodus = true
-  gnuplot = true
 []
+
 
 [Adaptivity]
   initial_steps = 1
@@ -388,5 +370,3 @@ inactive = 'Modules'
   []
 []
 
-[Modules]
-[]
