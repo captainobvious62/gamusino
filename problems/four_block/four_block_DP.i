@@ -47,7 +47,7 @@
   []
   [P_Time]
     type = GamusinoKernelTimeH
-    has_density_coupling = true
+    has_density_coupling = false
     variable = pore_pressure
   []
 []
@@ -91,6 +91,10 @@
     order = CONSTANT
   []
   [permeability]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [yield]
     family = MONOMIAL
     order = CONSTANT
   []
@@ -153,6 +157,10 @@
     type = MaterialRealAux
     variable = permeability
     property = permeability
+  []
+  [yield]
+    type = MaterialRealAux
+    property = plastic_yield_function
   []
 []
 
@@ -221,21 +229,22 @@
     block = 'concrust'
   []
   [oceancrust]
-    type = GamusinoMaterialMElastic
+    type = GamusinoMaterialMInelastic
     gravity_acceleration = 9.80
     fluid_viscosity_initial = 0.002
     has_gravity = true
     fluid_viscosity_uo = fluid_viscosity
+    inelastic_models = 'DP'
     strain_model = incr_small_strain
     fluid_density_initial = 1019.368
+    solid_density_initial = 2600
     poisson_ratio = 0.25
     porosity_uo = porosity
     permeability_uo = permeability
     permeability_initial = '1.0e-12'
     young_modulus = 10.0e+09
-    porosity_initial = 0.12
+    porosity_initial = 0.15
     fluid_density_uo = fluid_density
-    solid_density_initial = 2600
     block = 'oceancrust'
   []
   [conmantle]
@@ -249,7 +258,7 @@
     poisson_ratio = 0.25
     porosity_uo = porosity
     permeability_uo = permeability
-    permeability_initial = '1.0e-15'
+    permeability_initial = '1.0e-14'
     young_modulus = 10.0e+09
     porosity_initial = 0.08
     fluid_density_uo = fluid_density
@@ -274,6 +283,14 @@
     solid_density_initial = 5000
     block = 'oceanmantle'
   []
+  [DP]
+    type = GamusinoDruckerPrager
+    min_step_size = 0.01
+    MC_friction = DP_friction
+    MC_dilation = DP_dilation
+    MC_cohesion = DP_cohesion
+    yield_function_tol = 1e-8
+  []
 []
 
 [UserObjects]
@@ -295,6 +312,19 @@
     characteristic_stress = 1.0e+06
     characteristic_time = 1.0
     characteristic_temperature = 1.0
+  []
+  [DP_cohesion]
+    type = GamusinoHardeningConstant
+  []
+  [DP_friction]
+    type = GamusinoHardeningConstant
+    convert_to_radians = true
+    value = 10
+  []
+  [DP_dilation]
+    type = GamusinoHardeningConstant
+    convert_to_radians = true
+    value = 10
   []
 []
 

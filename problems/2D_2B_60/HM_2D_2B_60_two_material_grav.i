@@ -1,6 +1,8 @@
+inactive = 'Adaptivity'
 [Mesh]
   # uniform_refine = 1
   type = FileMesh
+  uniform_refine = 1
   file = 60dipmodif_modified.exo
   dim = 2
 []
@@ -211,19 +213,21 @@
     # type = GamusinoPressureBC
     # component = 0
     # scaling_uo = scaling
-    type = GamusinoPressureBC
+    type = FunctionDirichletBC
     variable = pore_pressure
     boundary = 'left_top'
     function = inj_exp
-    component = 0
-    value = 2068427.2 # Pa ~ 100 psi
-    scaling_uo = scaling
   []
   [ymax_drained]
     type = PresetBC
     variable = pore_pressure
     boundary = 'surface'
     value = 0.0
+  []
+  [noflowfault]
+    type = NeumannBC
+    variable = pore_pressure
+    boundary = 'fault'
   []
 []
 
@@ -238,7 +242,7 @@
     fluid_density_initial = 1000.0 # kg/m**3
     young_modulus = 10.0e+09 # Pa
     poisson_ratio = 0.2
-    permeability_initial = '1.0e-15' # m**2
+    permeability_initial = '1.0e-13' # m**2
     fluid_viscosity_initial = 0.002 # Pa*s
     porosity_initial = 0.15
     porosity_uo = porosity
@@ -303,7 +307,7 @@
     full = true
     petsc_options = '-snes_ksp_ew'
     petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
-    petsc_options_value = 'gmres asm 1E-10 1E-10 200 500 lu NONZERO'
+    petsc_options_value = 'gmres asm 1E-9 1E-9 200 500 lu NONZERO'
   []
   [hypre]
     type = SMP
@@ -347,6 +351,8 @@
   end_time = 8640000 # sec
   dt = 14400 # sec
   verbose = true
+  nl_abs_step_tol = 1e-9
+  nl_rel_step_tol = 1e-9
 []
 
 [Outputs]
@@ -380,6 +386,6 @@
 [Functions]
   [inj_exp]
     type = ParsedFunction
-    value = '-1*exp(y)'
+    value = '-1*y*9.81*1000 + 3447378.6'
   []
 []

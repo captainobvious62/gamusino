@@ -319,7 +319,7 @@ GamusinoMaterialMElastic::setElasticModuli()
     iso_const[1] = getParam<Real>("shear_modulus");
   }
   else
-    mooseError("Incorrect combination of elastic properties in GamusinoMaterialMElasticech.");
+    mooseError("Incorrect combination of elastic properties in GamusinoMaterialMElastic.");
   if (_has_scaled_properties)
   {
     iso_const[0] *= _scaling_uo->_s_compressibility;
@@ -703,6 +703,7 @@ GamusinoMaterialMElastic::computeQpProperties()
 {
   // Update elasticity tensor
   GamusinoCrackClosure();
+
   // Check for coupling
   if ((_has_pf) && (!_has_T))
   {
@@ -809,8 +810,10 @@ GamusinoMaterialMElastic::GamusinoKernelPropertiesHM()
   Real one_on_visc = 1.0 / _fluid_viscosity[_qp];
   if (_fe_problem.isTransient())
     (*_H_kernel_time)[_qp] = _porosity[_qp] / _Kf + ((*_biot)[_qp] - _porosity[_qp]) / _Ks;
+
   (*_H_kernel)[_qp] =
       computeKernel((*_permeability)[_qp], _permeability_type, one_on_visc, _current_elem->dim());
+
   if (_current_elem->dim() < _mesh.dimension())
     (*_H_kernel)[_qp].rotate(_rotation_matrix);
   (*_H_kernel_grav)[_qp] = -_fluid_density[_qp] * _gravity;

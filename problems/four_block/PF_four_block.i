@@ -7,6 +7,7 @@
 [GlobalParams]
   displacements = 'disp_x disp_y'
   pore_pressure = 'pore_pressure'
+  biot_coefficient = '0.9'
 []
 
 [Variables]
@@ -17,38 +18,54 @@
   [disp_x]
     order = FIRST
     family = LAGRANGE
-    scaling = 1e-5
+    scaling = 1E-5
   []
   [disp_y]
     order = FIRST
     family = LAGRANGE
-    scaling = 1e-5
+    scaling = 1E-5
   []
 []
 
 [Kernels]
-  [HKernel]
-    type = GamusinoKernelH
-    variable = pore_pressure
-  []
-  [MKernel_x]
-    type = GamusinoKernelM
-    variable = disp_x
+  [grad_stress_x]
+    type = StressDivergenceTensors
     component = 0
+    variable = disp_x
   []
-  [MKernel_y]
-    type = GamusinoKernelM
-    variable = disp_y
+  [grad_stress_y]
+    type = StressDivergenceTensors
     component = 1
+    variable = disp_y
   []
-  [HMKernel]
-    type = GamusinoKernelHPoroElastic
+  [poro_x]
+    type = PorousFlowEffectiveStressCoupling
+    PorousFlowDictator = Franco
+    component = 0
+    variable = disp_x
+  []
+  [poro_y]
+    type = PorousFlowEffectiveStressCoupling
+    PorousFlowDictator = Franco
+    component = 1
+    variable = disp_y
+  []
+  [flux]
+    type = PorousFlowFullySaturatedDarcyFlow
+    PorousFlowDictator = Franco
+    gravity = '0 -9.81 0 '
     variable = pore_pressure
   []
-  [P_Time]
-    type = GamusinoKernelTimeH
-    has_density_coupling = true
+  [mass0]
+    type = PorousFlowFullySaturatedMassTimeDerivative
+    PorousFlowDictator = Franco
+    coupling_type = HydroMechanical
     variable = pore_pressure
+  []
+  [gravity_y]
+    type = Gravity
+    value = -9.81
+    variable = disp_y
   []
 []
 
@@ -97,66 +114,21 @@
 []
 
 [AuxKernels]
-  inactive = 'permeability'
-  [strain_xx]
-    type = GamusinoStrain
-    variable = strain_xx
-    index_i = 0
-    index_j = 0
-  []
-  [strain_xy]
-    type = GamusinoStrain
-    variable = strain_xy
-    index_i = 0
-    index_j = 1
-  []
-  [strain_yy]
-    type = GamusinoStrain
-    variable = strain_yy
-    index_i = 1
-    index_j = 1
-  []
-  [stress_xx]
-    type = GamusinoStress
-    variable = stress_xx
-    index_i = 0
-    index_j = 0
-  []
-  [stress_xy]
-    type = GamusinoStress
-    variable = stress_xy
-    index_i = 0
-    index_j = 1
-  []
-  [stress_yy]
-    type = GamusinoStress
-    variable = stress_yy
-    index_i = 1
-    index_j = 1
+  inactive = 'permeability porosity'
+  [permeability]
+    type = MaterialRealVectorValueAux
+    variable = permeability
+    property = PorousFlow_permeability_qp
   []
   [porosity]
     type = MaterialRealAux
-    variable = porosity
-    property = porosity
-  []
-  [fluid_viscosity]
-    type = MaterialRealAux
-    variable = fluid_viscosity
-    property = fluid_viscosity
-  []
-  [fluid_density]
-    type = MaterialRealAux
-    variable = fluid_density
-    property = fluid_density
-  []
-  [permeability]
-    type = MaterialRealAux
     variable = permeability
-    property = permeability
+    property = PorousFlow_porosity_qp
   []
 []
 
 [BCs]
+  inactive = 'noflow_xmin noflow_xmax noflow_ymin'
   [roller_xmin]
     type = DirichletBC
     variable = disp_x
@@ -199,107 +171,114 @@
     boundary = 'bottom'
     value = 0
   []
+  [Injection]
+    type = PorousFlowSink
+    variable = pore_pressure
+    boundary = 'fault'
+    flux_function = -1e-2
+    PorousFlowDictator = Franco
+    fluid_phase = 0
+  []
 []
 
 [Materials]
-  [concrust]
-    type = GamusinoMaterialMElastic
-    gravity_acceleration = 9.80
-    fluid_viscosity_initial = 0.002
-    has_gravity = true
-    fluid_viscosity_uo = fluid_viscosity
-    strain_model = incr_small_strain
-    fluid_density_initial = 1019.368
-    poisson_ratio = 0.25
-    porosity_uo = porosity
-    permeability_uo = permeability
-    permeability_initial = '1.0e-13'
-    young_modulus = 10.0e+09
-    porosity_initial = 0.09
-    fluid_density_uo = fluid_density
-    solid_density_initial = 2300
-    block = 'concrust'
+  [porosity]
+    type = PorousFlowPorosity
+    PorousFlowDictator = Franco
+    porosity_zero = '0.1'
+    at_nodes = true
+    solid_bulk = 0.7e9
+    fluid = true
+    mechanical = true
   []
-  [oceancrust]
-    type = GamusinoMaterialMElastic
-    gravity_acceleration = 9.80
-    fluid_viscosity_initial = 0.002
-    has_gravity = true
-    fluid_viscosity_uo = fluid_viscosity
-    strain_model = incr_small_strain
-    fluid_density_initial = 1019.368
-    poisson_ratio = 0.25
-    porosity_uo = porosity
-    permeability_uo = permeability
-    permeability_initial = '1.0e-12'
-    young_modulus = 10.0e+09
-    porosity_initial = 0.12
-    fluid_density_uo = fluid_density
-    solid_density_initial = 2600
-    block = 'oceancrust'
+  [permeability]
+    type = PorousFlowPermeabilityKozenyCarman
+    PorousFlowDictator = Franco
+    poroperm_function = kozeny_carman_phi0
+    m = 2
+    n = 3
+    k0 = 1e-13
+    phi0 = 0.1
   []
-  [conmantle]
-    type = GamusinoMaterialMElastic
-    gravity_acceleration = 9.80
-    fluid_viscosity_initial = 0.002
-    has_gravity = true
-    fluid_viscosity_uo = fluid_viscosity
-    strain_model = incr_small_strain
-    fluid_density_initial = 1019.368
-    poisson_ratio = 0.25
-    porosity_uo = porosity
-    permeability_uo = permeability
-    permeability_initial = '1.0e-15'
-    young_modulus = 10.0e+09
-    porosity_initial = 0.08
-    fluid_density_uo = fluid_density
-    solid_density_initial = 4000
-    block = 'conmantle'
+  [drained_elasticity_tensor]
+    type = ComputeIsotropicElasticityTensor
+    youngs_modulus = 10E9
+    poissons_ratio = 0.2
   []
-  [oceanmantle]
-    type = GamusinoMaterialMElastic
-    gravity_acceleration = 9.80
-    fluid_viscosity_initial = 0.002
-    has_gravity = true
-    fluid_viscosity_uo = fluid_viscosity
-    strain_model = incr_small_strain
-    fluid_density_initial = 1019.368
-    poisson_ratio = 0.25
-    porosity_uo = porosity
-    permeability_uo = permeability
-    permeability_initial = '1.0e-15'
-    young_modulus = 10.0e+09
-    porosity_initial = 0.08
-    fluid_density_uo = fluid_density
-    solid_density_initial = 5000
-    block = 'oceanmantle'
+  [strain]
+    type = ComputeSmallStrain
+  []
+  [stress]
+    type = ComputeLinearElasticStress
+  []
+  [bulk_density]
+    type = PorousFlowTotalGravitationalDensityFullySaturatedFromPorosity
+    PorousFlowDictator = Franco
+    rho_s = 2300
+  []
+  [volumetric_strain]
+    type = PorousFlowVolumetricStrain
+    PorousFlowDictator = Franco
+  []
+  [mass_frac]
+    type = PorousFlowMassFraction
+    PorousFlowDictator = Franco
+  []
+  [eff_fluid_pressure]
+    type = PorousFlowEffectiveFluidPressure
+    PorousFlowDictator = Franco
+  []
+  [ppss]
+    type = PorousFlow1PhaseFullySaturated
+    PorousFlowDictator = Franco
+    porepressure = 'pore_pressure'
+  []
+  [pore_fluid]
+    type = PorousFlowSingleComponentFluid
+    fp = pore_fluid
+    PorousFlowDictator = Franco
+    phase = 0
+  []
+  [biot_modulus]
+    type = PorousFlowConstantBiotModulus
+    PorousFlowDictator = Franco
+  []
+  [temperature]
+    type = PorousFlowTemperature
+    PorousFlowDictator = Franco
+  []
+  [porosity_for_aux]
+    type = PorousFlowPorosity
+    PorousFlowDictator = Franco
+    porosity_zero = '0.1'
+    solid_bulk = 0.7e9
+    fluid = true
+    mechanical = true
+  []
+  [eff_fluid_pressure_nodal]
+    type = PorousFlowEffectiveFluidPressure
+    at_nodes = true
+    PorousFlowDictator = Franco
+  []
+  [ppss_nodal]
+    type = PorousFlow1PhaseFullySaturated
+    at_nodes = true
+    PorousFlowDictator = Franco
+    porepressure = 'pore_pressure'
   []
 []
 
 [UserObjects]
-  [porosity]
-    type = GamusinoPorosityTHM
-  []
-  [fluid_density]
-    type = GamusinoFluidDensityIAPWS
-  []
-  [fluid_viscosity]
-    type = GamusinoFluidViscosityIAPWS
-  []
-  [permeability]
-    type = GamusinoPermeabilityKC
-  []
-  [scaling]
-    type = GamusinoScaling
-    characteristic_length = 1.0
-    characteristic_stress = 1.0e+06
-    characteristic_time = 1.0
-    characteristic_temperature = 1.0
+  [Franco]
+    type = PorousFlowDictator
+    porous_flow_vars = 'pore_pressure disp_x disp_y'
+    number_fluid_phases = 1
+    number_fluid_components = 1
   []
 []
 
 [Preconditioning]
-  inactive = 'precond hypre'
+  inactive = 'hypre mine'
   [precond]
     type = SMP
     full = true
@@ -341,6 +320,7 @@
   print_linear_residuals = true
   print_perf_log = true
   exodus = true
+  gnuplot = true
 []
 
 [Adaptivity]
@@ -361,5 +341,19 @@
       coarsen = 0.25
       refine = 0.75
     []
+  []
+[]
+
+[Modules]
+  [FluidProperties]
+    [pore_fluid]
+      type = SimpleFluidProperties
+    []
+  []
+[]
+
+[Constraints]
+  [New_0]
+    type = CoupledTiedValueConstraint
   []
 []
