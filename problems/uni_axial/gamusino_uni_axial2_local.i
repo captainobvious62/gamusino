@@ -22,11 +22,9 @@
 []
 
 [Kernels]
-  inactive = 'TensorMechanics DynamicTensorMechanics'
+  inactive = 'TensorMechanics'
   [TensorMechanics]
     displacements = 'disp_x disp_y'
-  []
-  [DynamicTensorMechanics]
   []
   [MKernel_x]
     type = GamusinoKernelM
@@ -184,6 +182,8 @@
     strain_model = incr_small_strain
     poisson_ratio = 0.0
     young_modulus = 1e9
+    porosity_uo = porosity
+    fluid_density_uo = fluid_density
   []
   [gDP]
     type = GamusinoDruckerPrager
